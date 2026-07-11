@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐾 Haustier-Paradies</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg1: #fef3e2;
+    --bg2: #e0f2fe;
+    --card: #ffffff;
+    --ink: #3b2f2f;
+    --muted: #8a7a6d;
+    --green: #4ade80;
+    --amber: #fbbf24;
+    --red: #f87171;
+    --shadow: 0 10px 30px rgba(90, 60, 20, 0.12);
+    --radius: 22px;
+  }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    font-family: "Segoe UI", "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+    background: linear-gradient(160deg, var(--bg1) 0%, var(--bg2) 100%);
+    min-height: 100vh;
+    color: var(--ink);
+    padding-bottom: 60px;
+  }
+
+  /* ---------- Kopfbereich ---------- */
+  header {
+    text-align: center;
+    padding: 28px 16px 10px;
+  }
+  header h1 {
+    font-size: clamp(1.7rem, 5vw, 2.6rem);
+    letter-spacing: 0.5px;
+  }
+  header p {
+    color: var(--muted);
+    margin-top: 6px;
+    font-size: 1rem;
+  }
+
+  .tabs {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 18px auto 6px;
+    flex-wrap: wrap;
+    padding: 0 12px;
+  }
+  .tab-btn {
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 12px 22px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.7);
+    color: var(--ink);
+    box-shadow: 0 3px 10px rgba(90, 60, 20, 0.10);
+    transition: transform 0.15s, background 0.2s;
+  }
+  .tab-btn:hover { transform: translateY(-2px); }
+  .tab-btn.active {
+    background: linear-gradient(135deg, #fb923c, #f97316);
+    color: #fff;
+  }
+
+  main { max-width: 1180px; margin: 0 auto; padding: 14px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 18px;
+    margin-top: 14px;
+  }
+
+  /* ---------- Haustier-Karte ---------- */
+  .pet-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 18px 18px 20px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s;
+  }
+  .pet-card:hover { transform: translateY(-3px); }
+
+  .pet-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .pet-name { font-size: 1.25rem; font-weight: 800; }
+  .pet-species { color: var(--muted); font-size: 0.85rem; margin-top: 2px; }
+
+  .level-badge {
+    background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 800;
+    padding: 5px 11px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .xp-mini {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 600;
+    opacity: 0.9;
+    text-align: center;
+  }
+
+  .pet-stage {
+    position: relative;
+    text-align: center;
+    padding: 14px 0 4px;
+    min-height: 118px;
+  }
+  .pet-emoji {
+    font-size: 78px;
+    display: inline-block;
+    animation: bounce 2.4s ease-in-out infinite;
+    cursor: pointer;
+    user-select: none;
+  }
+  .pet-card.sleeping .pet-emoji {
+    animation: snooze 3s ease-in-out infinite;
+    filter: grayscale(0.35) brightness(0.92);
+  }
+  .pet-card.sad .pet-emoji { animation: droop 3s ease-in-out infinite; }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0) rotate(-2deg); }
+    50%      { transform: translateY(-10px) rotate(2deg); }
+  }
+  @keyframes snooze {
+    0%, 100% { transform: translateY(0) rotate(-4deg) scale(0.97); }
+    50%      { transform: translateY(2px) rotate(-6deg) scale(0.97); }
+  }
+  @keyframes droop {
+    0%, 100% { transform: translateY(2px) scale(0.96); }
+    50%      { transform: translateY(4px) scale(0.95); }
+  }
+  @keyframes wiggle {
+    0%   { transform: rotate(0); }
+    25%  { transform: rotate(-12deg) scale(1.15); }
+    50%  { transform: rotate(10deg) scale(1.15); }
+    75%  { transform: rotate(-6deg) scale(1.08); }
+    100% { transform: rotate(0); }
+  }
+  .pet-emoji.wiggle { animation: wiggle 0.6s ease; }
+
+  .mood-emoji {
+    position: absolute;
+    top: 6px;
+    right: 16%;
+    font-size: 26px;
+  }
+
+  .bubble {
+    background: #fff7ed;
+    border: 2px solid #fed7aa;
+    color: #7c4a12;
+    border-radius: 14px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    padding: 8px 12px;
+    text-align: center;
+    margin: 6px 0 12px;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ---------- Statusbalken ---------- */
+  .stats { display: grid; gap: 8px; }
+  .stat-row {
+    display: grid;
+    grid-template-columns: 26px 1fr 38px;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+  }
+  .stat-ico { text-align: center; }
+  .bar {
+    background: #f1ebe4;
+    border-radius: 999px;
+    height: 14px;
+    overflow: hidden;
+  }
+  .fill {
+    height: 100%;
+    border-radius: 999px;
+    background: var(--green);
+    width: 50%;
+    transition: width 0.5s ease, background 0.5s ease;
+  }
+  .fill.warn { background: var(--amber); }
+  .fill.bad  { background: var(--red); }
+  .stat-val {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-align: right;
+  }
+
+  /* ---------- Aktions-Buttons ---------- */
+  .actions {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .act {
+    border: none;
+    cursor: pointer;
+    border-radius: 14px;
+    padding: 10px 4px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    transition: transform 0.12s, filter 0.2s;
+  }
+  .act span.big { font-size: 1.35rem; }
+  .act:hover  { transform: translateY(-2px); }
+  .act:active { transform: scale(0.93); }
+  .act:disabled {
+    filter: grayscale(0.8) opacity(0.55);
+    cursor: not-allowed;
+    transform: none;
+  }
+  .act-feed  { background: linear-gradient(135deg, #fb923c, #ea580c); }
+  .act-play  { background: linear-gradient(135deg, #4ade80, #16a34a); }
+  .act-sleep { background: linear-gradient(135deg, #818cf8, #4f46e5); }
+  .act-wash  { background: linear-gradient(135deg, #38bdf8, #0284c7); }
+
+  .give-back {
+    position: absolute;
+    bottom: 10px;
+    right: 12px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 0.72rem;
+    color: #c2b3a3;
+    font-weight: 600;
+  }
+  .give-back:hover { color: var(--red); text-decoration: underline; }
+  .pet-card { padding-bottom: 34px; }
+
+  /* ---------- Partikel ---------- */
+  .particle {
+    position: absolute;
+    font-size: 24px;
+    pointer-events: none;
+    animation: floatUp 1.1s ease-out forwards;
+    z-index: 5;
+  }
+  @keyframes floatUp {
+    0%   { opacity: 1; transform: translateY(0) scale(0.8); }
+    100% { opacity: 0; transform: translateY(-90px) scale(1.4); }
+  }
+
+  /* ---------- Tierheim ---------- */
+  .shelter-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 22px 18px;
+    text-align: center;
+    transition: transform 0.2s;
+  }
+  .shelter-card:hover { transform: translateY(-4px); }
+  .shelter-emoji { font-size: 64px; display: block; }
+  .shelter-card h3 { margin-top: 8px; font-size: 1.15rem; }
+  .shelter-card p {
+    color: var(--muted);
+    font-size: 0.86rem;
+    margin: 6px 0 14px;
+    min-height: 40px;
+  }
+  .adopt-btn {
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(135deg, #f472b6, #db2777);
+    color: #fff;
+    font-weight: 800;
+    font-size: 0.95rem;
+    padding: 11px 26px;
+    border-radius: 999px;
+    transition: transform 0.15s;
+  }
+  .adopt-btn:hover { transform: scale(1.06); }
+
+  /* ---------- Leerer Zustand ---------- */
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+  .empty .paw { font-size: 64px; display: block; margin-bottom: 12px; }
+  .empty button {
+    margin-top: 18px;
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(135deg, #fb923c, #f97316);
+    color: #fff;
+    font-weight: 800;
+    font-size: 1rem;
+    padding: 13px 30px;
+    border-radius: 999px;
+  }
+
+  /* ---------- Modal ---------- */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(50, 35, 20, 0.45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 16px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    max-width: 380px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  }
+  .modal .m-emoji { font-size: 60px; }
+  .modal h2 { margin: 8px 0 4px; font-size: 1.3rem; }
+  .modal p { color: var(--muted); font-size: 0.9rem; margin-bottom: 14px; }
+  .modal input {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 1.05rem;
+    border: 2px solid #fcd9b6;
+    border-radius: 14px;
+    outline: none;
+    text-align: center;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .modal input:focus { border-color: #fb923c; }
+  .modal .m-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+  }
+  .modal .m-actions button {
+    flex: 1;
+    border: none;
+    cursor: pointer;
+    padding: 12px;
+    border-radius: 14px;
+    font-weight: 800;
+    font-size: 0.95rem;
+  }
+  .m-cancel { background: #f1ebe4; color: var(--muted); }
+  .m-ok {
+    background: linear-gradient(135deg, #4ade80, #16a34a);
+    color: #fff;
+  }
+
+  /* ---------- Toast ---------- */
+  #toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%) translateY(80px);
+    background: #3b2f2f;
+    color: #fff;
+    padding: 13px 22px;
+    border-radius: 999px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    opacity: 0;
+    transition: transform 0.35s ease, opacity 0.35s ease;
+    z-index: 60;
+    max-width: 90vw;
+    text-align: center;
+  }
+  #toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+
+  @media (max-width: 420px) {
+    .pet-emoji { font-size: 64px; }
+    .act { font-size: 0.72rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🐾 Haustier-Paradies</h1>
+  <p>Füttere, spiele und kümmere dich um deine Tiere – sie zählen auf dich!</p>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" id="tabHome" onclick="showTab('home')">🏠 Mein Zuhause</button>
+  <button class="tab-btn" id="tabShelter" onclick="showTab('shelter')">🏕️ Tierheim</button>
+</div>
+
+<main>
+  <section id="homeSection">
+    <div class="grid" id="homeGrid"></div>
+    <div class="empty" id="emptyHome" style="display:none;">
+      <span class="paw">🐾</span>
+      <h2>Noch ganz schön leer hier …</h2>
+      <p>Adoptiere dein erstes Haustier im Tierheim!</p>
+      <button onclick="showTab('shelter')">🏕️ Zum Tierheim</button>
+    </div>
+  </section>
+
+  <section id="shelterSection" style="display:none;">
+    <div class="grid" id="shelterGrid"></div>
+  </section>
+</main>
+
+<!-- Adoptions-Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="m-emoji" id="modalEmoji">🐕</div>
+    <h2 id="modalTitle">Hund adoptieren</h2>
+    <p>Wie soll dein neues Haustier heissen?</p>
+    <input type="text" id="nameInput" maxlength="16" placeholder="Name eingeben …">
+    <div class="m-actions">
+      <button class="m-cancel" onclick="closeModal()">Abbrechen</button>
+      <button class="m-ok" onclick="confirmAdopt()">Adoptieren 💚</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+'use strict';
+
+/* ================= Tierarten ================= */
+const SPECIES = [
+  { key: 'hund',        emoji: '🐕', label: 'Hund',        food: '🦴', desc: 'Dein treuster Freund – will ganz viel spielen und kuscheln.',   names: ['Bello', 'Rex', 'Luna', 'Rocky'],    rates: { hunger: 1.1, fun: 1.3, energy: 1.0, clean: 1.1 }, bath: 0 },
+  { key: 'katze',       emoji: '🐈', label: 'Katze',       food: '🐟', desc: 'Elegant und verschmust, schläft gern – hasst aber Baden!',      names: ['Minka', 'Felix', 'Mia', 'Simba'],   rates: { hunger: 1.0, fun: 0.9, energy: 1.2, clean: 0.7 }, bath: -15 },
+  { key: 'tiger',       emoji: '🐅', label: 'Tiger',       food: '🥩', desc: 'Ein grosser Jäger mit riesigem Hunger. Nichts für Anfänger!',   names: ['Raja', 'Kira', 'Diego', 'Shira'],   rates: { hunger: 1.6, fun: 1.1, energy: 1.0, clean: 0.8 }, bath: -10 },
+  { key: 'kaninchen',   emoji: '🐇', label: 'Kaninchen',   food: '🥕', desc: 'Hoppelt fröhlich herum und knabbert einfach ständig.',          names: ['Hoppel', 'Schnuffel', 'Momo', 'Flecki'], rates: { hunger: 1.3, fun: 1.0, energy: 0.9, clean: 1.0 }, bath: 0 },
+  { key: 'hamster',     emoji: '🐹', label: 'Hamster',     food: '🌻', desc: 'Klein, flauschig und immer am Wuseln – braucht viele Nickerchen.', names: ['Krümel', 'Nugget', 'Peanut', 'Speedy'], rates: { hunger: 1.2, fun: 1.0, energy: 1.3, clean: 0.9 }, bath: 0 },
+  { key: 'papagei',     emoji: '🦜', label: 'Papagei',     food: '🍎', desc: 'Bunt und gesprächig – langweilt sich schnell, will Action!',    names: ['Coco', 'Rio', 'Kiwi', 'Polly'],     rates: { hunger: 1.0, fun: 1.4, energy: 1.0, clean: 0.8 }, bath: 5 },
+  { key: 'schildkroete', emoji: '🐢', label: 'Schildkröte', food: '🥬', desc: 'Gemütlich und super pflegeleicht. Perfekt für Einsteiger.',    names: ['Berta', 'Kai', 'Tuki', 'Emma'],     rates: { hunger: 0.6, fun: 0.6, energy: 0.7, clean: 0.6 }, bath: 5 },
+  { key: 'fuchs',       emoji: '🦊', label: 'Fuchs',       food: '🍗', desc: 'Schlau, verspielt und ein kleiner Schlingel im Fell.',          names: ['Foxi', 'Rusty', 'Finn', 'Amber'],   rates: { hunger: 1.2, fun: 1.2, energy: 1.0, clean: 1.2 }, bath: -5 },
+];
+
+/* Basis-Abnahme pro Minute (wird mit Arten-Faktor multipliziert) */
+const DECAY = { hunger: 4.5, fun: 3.5, energy: 2.5, clean: 2.5 };
+const STATS = [
+  { key: 'hunger', ico: '🍖', label: 'Futter' },
+  { key: 'fun',    ico: '😊', label: 'Glück' },
+  { key: 'energy', ico: '⚡', label: 'Energie' },
+  { key: 'clean',  ico: '🧼', label: 'Sauberkeit' },
+];
+const MAX_CATCHUP_MIN = 120;   // Offline-Zeit wird auf 2 h begrenzt
+const SLEEP_SECONDS = 20;
+
+/* ================= Spielstand ================= */
+let state = { pets: [], nextId: 1, lastSeen: Date.now() };
+
+function save() {
+  state.lastSeen = Date.now();
+  try { localStorage.setItem('haustierParadies', JSON.stringify(state)); } catch (e) { /* privater Modus */ }
+}
+
+function load() {
+  let raw = null;
+  try { raw = localStorage.getItem('haustierParadies'); } catch (e) { /* privater Modus */ }
+  if (!raw) return;
+  try {
+    const data = JSON.parse(raw);
+    if (data && Array.isArray(data.pets)) state = data;
+  } catch (e) { /* kaputter Spielstand -> neu anfangen */ }
+
+  // Offline-Aufholung: Werte sinken auch, während die Seite zu war
+  const elapsedMin = Math.min(MAX_CATCHUP_MIN, (Date.now() - (state.lastSeen || Date.now())) / 60000);
+  if (elapsedMin > 0.5) {
+    state.pets.forEach(p => applyDecay(p, elapsedMin));
+    if (elapsedMin > 2) {
+      setTimeout(() => toast('Willkommen zurück! Deine Tiere haben dich vermisst. 🐾'), 600);
+    }
+  }
+  state.pets.forEach(p => { p.sleepUntil = 0; }); // nach Neuladen ist niemand mehr im Nickerchen
+}
+
+/* ================= Spiel-Logik ================= */
+function speciesOf(pet) { return SPECIES.find(s => s.key === pet.species) || SPECIES[0]; }
+function clamp(v) { return Math.max(0, Math.min(100, v)); }
+
+function applyDecay(pet, minutes) {
+  const r = speciesOf(pet).rates;
+  const sleeping = pet.sleepUntil > Date.now();
+  pet.hunger = clamp(pet.hunger - DECAY.hunger * r.hunger * minutes * (sleeping ? 0.5 : 1));
+  pet.fun    = clamp(pet.fun    - DECAY.fun    * r.fun    * minutes * (sleeping ? 0.3 : 1));
+  pet.clean  = clamp(pet.clean  - DECAY.clean  * r.clean  * minutes * (sleeping ? 0.3 : 1));
+  if (sleeping) {
+    pet.energy = clamp(pet.energy + 5 * minutes * 60); // +5 pro Sekunde
+    if (pet.energy >= 100) pet.sleepUntil = 0;         // ausgeschlafen -> früher aufwachen
+  } else {
+    pet.energy = clamp(pet.energy - DECAY.energy * r.energy * minutes);
+  }
+}
+
+function gainXp(pet, amount) {
+  pet.xp += amount;
+  let needed = xpNeeded(pet.level);
+  while (pet.xp >= needed) {
+    pet.xp -= needed;
+    pet.level += 1;
+    needed = xpNeeded(pet.level);
+    setMessage(pet, `Level ${pet.level} erreicht! 🎉`, 4000);
+    burst(pet.id, ['🎉', '⭐', '🎊', '⭐'], 8);
+  }
+}
+function xpNeeded(level) { return 40 + (level - 1) * 30; }
+
+/* kurzzeitige Sprechblasen-Nachricht */
+const tempMsg = {}; // id -> {text, until}
+function setMessage(pet, text, ms = 3200) {
+  tempMsg[pet.id] = { text, until: Date.now() + ms };
+}
+
+function moodOf(pet) {
+  if (pet.sleepUntil > Date.now()) {
+    return { emoji: '😴', text: `${pet.name} schläft tief und fest … 💤`, cls: 'sleeping' };
+  }
+  const worst = STATS.reduce((a, b) => (pet[a.key] <= pet[b.key] ? a : b));
+  const v = pet[worst.key];
+  const need = { hunger: 'hat riesigen Hunger! 🍖', fun: 'langweilt sich furchtbar! 🥺', energy: 'ist total müde … 🥱', clean: 'braucht dringend ein Bad! 🫧' };
+  const soft = { hunger: 'hätte gern einen Snack.', fun: 'würde gern spielen.', energy: 'gähnt schon ein bisschen.', clean: 'könnte ein Bad vertragen.' };
+  if (v < 20) return { emoji: '😢', text: `${pet.name} ${need[worst.key]}`, cls: 'sad' };
+  if (v < 45) return { emoji: '😕', text: `${pet.name} ${soft[worst.key]}`, cls: '' };
+  if (v < 70) return { emoji: '🙂', text: `${pet.name} fühlt sich wohl.`, cls: '' };
+  return { emoji: '😄', text: `${pet.name} ist überglücklich!`, cls: '' };
+}
+
+/* ================= Aktionen ================= */
+function doAction(id, action) {
+  const pet = state.pets.find(p => p.id === id);
+  if (!pet) return;
+  const sp = speciesOf(pet);
+  const sleeping = pet.sleepUntil > Date.now();
+
+  if (action === 'sleep') {
+    if (sleeping) {
+      pet.sleepUntil = 0;
+      setMessage(pet, 'Gut geschlafen! ⚡');
+    } else {
+      pet.sleepUntil = Date.now() + SLEEP_SECONDS * 1000;
+      setMessage(pet, 'Pssst … Nickerchen-Zeit. 💤', SLEEP_SECONDS * 1000);
+      burst(id, ['💤'], 3);
+    }
+  } else if (sleeping) {
+    return; // andere Aktionen gehen nicht im Schlaf
+  } else if (action === 'feed') {
+    pet.hunger = clamp(pet.hunger + 35);
+    pet.clean = clamp(pet.clean - 4);
+    setMessage(pet, `Mmmh, ${sp.food} – lecker! 😋`);
+    burst(id, [sp.food, '😋', sp.food], 5);
+    gainXp(pet, 5);
+  } else if (action === 'play') {
+    if (pet.energy < 10) {
+      setMessage(pet, `${pet.name} ist zu müde zum Spielen … 🥱`);
+    } else {
+      pet.fun = clamp(pet.fun + 35);
+      pet.energy = clamp(pet.energy - 12);
+      pet.hunger = clamp(pet.hunger - 6);
+      setMessage(pet, 'Das macht Spass! 🎾');
+      burst(id, ['🎾', '❤️', '🎉'], 6);
+      gainXp(pet, 8);
+    }
+  } else if (action === 'wash') {
+    pet.clean = clamp(pet.clean + 45);
+    pet.fun = clamp(pet.fun + sp.bath);
+    setMessage(pet, sp.bath < 0 ? 'Bäh, Wasser! 🙀' : 'Blitzeblank! ✨');
+    burst(id, ['🫧', '💦', '🧼'], 6);
+    gainXp(pet, 5);
+  }
+
+  wigglePet(id);
+  save();
+  updateCard(pet);
+}
+
+function pokePet(id) {
+  const pet = state.pets.find(p => p.id === id);
+  if (!pet || pet.sleepUntil > Date.now()) return;
+  setMessage(pet, `${pet.name} freut sich über deine Streicheleinheit! ❤️`);
+  burst(id, ['❤️'], 3);
+  wigglePet(id);
+  updateCard(pet);
+}
+
+function giveBack(id) {
+  const pet = state.pets.find(p => p.id === id);
+  if (!pet) return;
+  if (!confirm(`Möchtest du ${pet.name} wirklich zurück ins Tierheim bringen?`)) return;
+  state.pets = state.pets.filter(p => p.id !== id);
+  save();
+  renderHome();
+  toast(`${pet.name} winkt dir zum Abschied. 👋`);
+}
+
+/* ================= Adoption ================= */
+let adoptKey = null;
+
+function openAdopt(key) {
+  adoptKey = key;
+  const sp = SPECIES.find(s => s.key === key);
+  document.getElementById('modalEmoji').textContent = sp.emoji;
+  document.getElementById('modalTitle').textContent = sp.label + ' adoptieren';
+  const input = document.getElementById('nameInput');
+  input.value = sp.names[Math.floor(Math.random() * sp.names.length)];
+  document.getElementById('modalOverlay').classList.add('open');
+  setTimeout(() => { input.focus(); input.select(); }, 50);
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  adoptKey = null;
+}
+
+function confirmAdopt() {
+  if (!adoptKey) return;
+  const sp = SPECIES.find(s => s.key === adoptKey);
+  const name = (document.getElementById('nameInput').value.trim() || sp.names[0]).slice(0, 16);
+  state.pets.push({
+    id: state.nextId++,
+    species: sp.key,
+    name,
+    hunger: 80, fun: 80, energy: 80, clean: 80,
+    xp: 0, level: 1, sleepUntil: 0,
+  });
+  save();
+  closeModal();
+  showTab('home');
+  toast(`${sp.emoji} ${name} ist bei dir eingezogen!`);
+}
+
+/* ================= Darstellung ================= */
+function showTab(tab) {
+  document.getElementById('homeSection').style.display = tab === 'home' ? '' : 'none';
+  document.getElementById('shelterSection').style.display = tab === 'shelter' ? '' : 'none';
+  document.getElementById('tabHome').classList.toggle('active', tab === 'home');
+  document.getElementById('tabShelter').classList.toggle('active', tab === 'shelter');
+  if (tab === 'home') renderHome();
+}
+
+function renderShelter() {
+  const grid = document.getElementById('shelterGrid');
+  grid.innerHTML = SPECIES.map(sp => `
+    <div class="shelter-card">
+      <span class="shelter-emoji">${sp.emoji}</span>
+      <h3>${sp.label}</h3>
+      <p>${sp.desc}</p>
+      <button class="adopt-btn" onclick="openAdopt('${sp.key}')">Adoptieren 💚</button>
+    </div>
+  `).join('');
+}
+
+function renderHome() {
+  const grid = document.getElementById('homeGrid');
+  const empty = document.getElementById('emptyHome');
+  document.getElementById('tabHome').textContent = `🏠 Mein Zuhause (${state.pets.length})`;
+  empty.style.display = state.pets.length ? 'none' : '';
+  grid.innerHTML = state.pets.map(pet => {
+    const sp = speciesOf(pet);
+    return `
+    <div class="pet-card" id="pet-${pet.id}">
+      <div class="pet-top">
+        <div>
+          <div class="pet-name">${escapeHtml(pet.name)}</div>
+          <div class="pet-species">${sp.emoji} ${sp.label}</div>
+        </div>
+        <div class="level-badge">Level <span class="lvl">1</span><span class="xp-mini"><span class="xp">0</span> XP</span></div>
+      </div>
+      <div class="pet-stage">
+        <span class="mood-emoji"></span>
+        <span class="pet-emoji" onclick="pokePet(${pet.id})">${sp.emoji}</span>
+      </div>
+      <div class="bubble"></div>
+      <div class="stats">
+        ${STATS.map(st => `
+          <div class="stat-row">
+            <span class="stat-ico">${st.ico}</span>
+            <div class="bar"><div class="fill" data-stat="${st.key}"></div></div>
+            <span class="stat-val" data-val="${st.key}"></span>
+          </div>`).join('')}
+      </div>
+      <div class="actions">
+        <button class="act act-feed"  onclick="doAction(${pet.id}, 'feed')"><span class="big">🍖</span>Füttern</button>
+        <button class="act act-play"  onclick="doAction(${pet.id}, 'play')"><span class="big">🎾</span>Spielen</button>
+        <button class="act act-sleep" onclick="doAction(${pet.id}, 'sleep')"><span class="big">💤</span><span class="sleep-label">Schlafen</span></button>
+        <button class="act act-wash"  onclick="doAction(${pet.id}, 'wash')"><span class="big">🛁</span>Waschen</button>
+      </div>
+      <button class="give-back" onclick="giveBack(${pet.id})">↩ zurück ins Tierheim</button>
+    </div>`;
+  }).join('');
+  state.pets.forEach(updateCard);
+}
+
+function updateCard(pet) {
+  const card = document.getElementById('pet-' + pet.id);
+  if (!card) return;
+  const sleeping = pet.sleepUntil > Date.now();
+  const mood = moodOf(pet);
+
+  card.classList.toggle('sleeping', sleeping);
+  card.classList.toggle('sad', mood.cls === 'sad');
+  card.querySelector('.lvl').textContent = pet.level;
+  card.querySelector('.xp').textContent = `${Math.floor(pet.xp)} / ${xpNeeded(pet.level)}`;
+  card.querySelector('.mood-emoji').textContent = mood.emoji;
+
+  const t = tempMsg[pet.id];
+  card.querySelector('.bubble').textContent = (t && t.until > Date.now()) ? t.text : mood.text;
+
+  STATS.forEach(st => {
+    const v = Math.round(pet[st.key]);
+    const fill = card.querySelector(`.fill[data-stat="${st.key}"]`);
+    fill.style.width = v + '%';
+    fill.classList.toggle('warn', v < 60 && v >= 30);
+    fill.classList.toggle('bad', v < 30);
+    card.querySelector(`.stat-val[data-val="${st.key}"]`).textContent = v;
+  });
+
+  card.querySelector('.sleep-label').textContent = sleeping ? 'Wecken' : 'Schlafen';
+  card.querySelectorAll('.act-feed, .act-play, .act-wash').forEach(b => { b.disabled = sleeping; });
+}
+
+/* ================= Effekte ================= */
+function wigglePet(id) {
+  const el = document.querySelector(`#pet-${id} .pet-emoji`);
+  if (!el) return;
+  el.classList.remove('wiggle');
+  void el.offsetWidth; // Animation neu starten
+  el.classList.add('wiggle');
+}
+
+function burst(id, emojis, count) {
+  const stage = document.querySelector(`#pet-${id} .pet-stage`);
+  if (!stage) return;
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('span');
+    p.className = 'particle';
+    p.textContent = emojis[i % emojis.length];
+    p.style.left = (25 + Math.random() * 50) + '%';
+    p.style.bottom = (10 + Math.random() * 30) + 'px';
+    p.style.animationDelay = (Math.random() * 0.35) + 's';
+    stage.appendChild(p);
+    setTimeout(() => p.remove(), 1600);
+  }
+}
+
+let toastTimer = null;
+function toast(text) {
+  const el = document.getElementById('toast');
+  el.textContent = text;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+/* ================= Game-Loop ================= */
+let lastTick = Date.now();
+setInterval(() => {
+  const now = Date.now();
+  const minutes = Math.min(MAX_CATCHUP_MIN, (now - lastTick) / 60000);
+  lastTick = now;
+  state.pets.forEach(pet => {
+    const wasSleeping = pet.sleepUntil > now - 1000;
+    applyDecay(pet, minutes);
+    if (wasSleeping && pet.sleepUntil <= Date.now() && pet.energy >= 99) {
+      setMessage(pet, 'Ausgeschlafen und voller Energie! ⚡');
+    }
+    updateCard(pet);
+  });
+  save();
+}, 1000);
+
+/* Enter-Taste im Namensfeld bestätigt die Adoption */
+document.getElementById('nameInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') confirmAdopt();
+});
+
+/* ================= Start ================= */
+load();
+renderShelter();
+renderHome();
+</script>
+</body>
+</html>
