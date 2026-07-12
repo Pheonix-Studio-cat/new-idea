@@ -24,7 +24,7 @@
   html { -webkit-text-size-adjust: 100%; }
 
   body {
-    font-family: "Segoe UI", "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+    font-family: "Segoe UI", "Helvetica Neue", Arial, "Hiragino Sans", "PingFang SC", "Microsoft YaHei", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
     background: linear-gradient(160deg, var(--bg1) 0%, var(--bg2) 100%);
     min-height: 100vh;
     color: var(--ink);
@@ -46,11 +46,25 @@
     font-size: 1rem;
   }
 
+  .lang-wrap { margin-top: 14px; }
+  .lang-select {
+    border: none;
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 999px;
+    padding: 9px 18px;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--ink);
+    box-shadow: 0 3px 10px rgba(90, 60, 20, 0.10);
+    cursor: pointer;
+    text-align: center;
+  }
+
   .tabs {
     display: flex;
     justify-content: center;
     gap: 10px;
-    margin: 18px auto 6px;
+    margin: 14px auto 6px;
     flex-wrap: wrap;
     padding: 0 12px;
   }
@@ -86,7 +100,7 @@
     background: var(--card);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
-    padding: 18px 18px 20px;
+    padding: 18px 18px 34px;
     position: relative;
     overflow: hidden;
     transition: transform 0.2s;
@@ -109,6 +123,7 @@
     padding: 5px 11px;
     border-radius: 999px;
     white-space: nowrap;
+    text-align: center;
   }
   .xp-mini {
     display: block;
@@ -259,7 +274,6 @@
     font-weight: 600;
   }
   .give-back:hover { color: var(--red); text-decoration: underline; }
-  .pet-card { padding-bottom: 34px; }
 
   /* ---------- Partikel ---------- */
   .particle {
@@ -412,13 +426,16 @@
 <body>
 
 <header>
-  <h1>🐾 Haustier-Paradies</h1>
-  <p>Füttere, spiele und kümmere dich um deine Tiere – sie zählen auf dich!</p>
+  <h1 id="appTitle">🐾 Haustier-Paradies</h1>
+  <p id="appTagline"></p>
+  <div class="lang-wrap">
+    <select class="lang-select" id="langSelect" onchange="setLang(this.value)"></select>
+  </div>
 </header>
 
 <div class="tabs">
-  <button class="tab-btn active" id="tabHome" onclick="showTab('home')">🏠 Mein Zuhause</button>
-  <button class="tab-btn" id="tabShelter" onclick="showTab('shelter')">🏕️ Tierheim</button>
+  <button class="tab-btn active" id="tabHome" onclick="showTab('home')"></button>
+  <button class="tab-btn" id="tabShelter" onclick="showTab('shelter')"></button>
 </div>
 
 <main>
@@ -426,9 +443,9 @@
     <div class="grid" id="homeGrid"></div>
     <div class="empty" id="emptyHome" style="display:none;">
       <span class="paw">🐾</span>
-      <h2>Noch ganz schön leer hier …</h2>
-      <p>Adoptiere dein erstes Haustier im Tierheim!</p>
-      <button onclick="showTab('shelter')">🏕️ Zum Tierheim</button>
+      <h2 id="emptyTitle"></h2>
+      <p id="emptyText"></p>
+      <button id="emptyBtn" onclick="showTab('shelter')"></button>
     </div>
   </section>
 
@@ -441,12 +458,12 @@
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <div class="m-emoji" id="modalEmoji">🐕</div>
-    <h2 id="modalTitle">Hund adoptieren</h2>
-    <p>Wie soll dein neues Haustier heissen?</p>
-    <input type="text" id="nameInput" maxlength="16" placeholder="Name eingeben …">
+    <h2 id="modalTitle"></h2>
+    <p id="modalQuestion"></p>
+    <input type="text" id="nameInput" maxlength="16">
     <div class="m-actions">
-      <button class="m-cancel" onclick="closeModal()">Abbrechen</button>
-      <button class="m-ok" onclick="confirmAdopt()">Adoptieren 💚</button>
+      <button class="m-cancel" id="mCancel" onclick="closeModal()"></button>
+      <button class="m-ok" id="mOk" onclick="confirmAdopt()"></button>
     </div>
   </div>
 </div>
@@ -456,25 +473,361 @@
 <script>
 'use strict';
 
+/* ================= Sprachen ================= */
+const LANGS = [
+  { code: 'de', flag: '🇩🇪', name: 'Deutsch' },
+  { code: 'en', flag: '🇬🇧', name: 'English' },
+  { code: 'ja', flag: '🇯🇵', name: '日本語' },
+  { code: 'zh', flag: '🇨🇳', name: '中文' },
+  { code: 'fr', flag: '🇫🇷', name: 'Français' },
+  { code: 'it', flag: '🇮🇹', name: 'Italiano' },
+  { code: 'es', flag: '🇪🇸', name: 'Español' },
+  { code: 'fi', flag: '🇫🇮', name: 'Suomi' },
+  { code: 'no', flag: '🇳🇴', name: 'Norsk' },
+  { code: 'sv', flag: '🇸🇪', name: 'Svenska' },
+];
+
+const I18N = {
+de: {
+  title: 'Haustier-Paradies',
+  tagline: 'Füttere, spiele und kümmere dich um deine Tiere – sie zählen auf dich!',
+  tabHome: '🏠 Mein Zuhause ({n})', tabShelter: '🏕️ Tierheim',
+  emptyTitle: 'Noch ganz schön leer hier …', emptyText: 'Adoptiere dein erstes Haustier im Tierheim!', emptyBtn: '🏕️ Zum Tierheim',
+  adoptTitle: '{species} adoptieren', adoptQuestion: 'Wie soll dein neues Haustier heissen?', namePlaceholder: 'Name eingeben …',
+  cancel: 'Abbrechen', adoptBtn: 'Adoptieren 💚', level: 'Level',
+  actFeed: 'Füttern', actPlay: 'Spielen', actSleep: 'Schlafen', actWake: 'Wecken', actWash: 'Waschen',
+  giveBack: '↩ zurück ins Tierheim', confirmBack: 'Möchtest du {name} wirklich zurück ins Tierheim bringen?',
+  sleeping: '{name} schläft tief und fest … 💤',
+  need: { hunger: '{name} hat riesigen Hunger! 🍖', fun: '{name} langweilt sich furchtbar! 🥺', energy: '{name} ist total müde … 🥱', clean: '{name} braucht dringend ein Bad! 🫧' },
+  soft: { hunger: '{name} hätte gern einen Snack.', fun: '{name} würde gern spielen.', energy: '{name} gähnt schon ein bisschen.', clean: '{name} könnte ein Bad vertragen.' },
+  moodOk: '{name} fühlt sich wohl.', moodGreat: '{name} ist überglücklich!',
+  msgFeed: 'Mmmh, {food} – lecker! 😋', msgPlay: 'Das macht Spass! 🎾', msgTired: '{name} ist zu müde zum Spielen … 🥱',
+  msgBathNo: 'Bäh, Wasser! 🙀', msgBathYes: 'Blitzeblank! ✨', msgNap: 'Pssst … Nickerchen-Zeit. 💤',
+  msgWake: 'Gut geschlafen! ⚡', msgSlept: 'Ausgeschlafen und voller Energie! ⚡', msgLevel: 'Level {lvl} erreicht! 🎉', msgPet: '{name} freut sich über deine Streicheleinheit! ❤️',
+  toastIn: '{emoji} {name} ist bei dir eingezogen!', toastBye: '{name} winkt dir zum Abschied. 👋', toastBack: 'Willkommen zurück! Deine Tiere haben dich vermisst. 🐾',
+  species: {
+    hund: { label: 'Hund', desc: 'Dein treuster Freund – will ganz viel spielen und kuscheln.' },
+    katze: { label: 'Katze', desc: 'Elegant und verschmust, schläft gern – hasst aber Baden!' },
+    tiger: { label: 'Tiger', desc: 'Ein grosser Jäger mit riesigem Hunger. Nichts für Anfänger!' },
+    kaninchen: { label: 'Kaninchen', desc: 'Hoppelt fröhlich herum und knabbert einfach ständig.' },
+    hamster: { label: 'Hamster', desc: 'Klein, flauschig und immer am Wuseln – braucht viele Nickerchen.' },
+    papagei: { label: 'Papagei', desc: 'Bunt und gesprächig – langweilt sich schnell, will Action!' },
+    schildkroete: { label: 'Schildkröte', desc: 'Gemütlich und super pflegeleicht. Perfekt für Einsteiger.' },
+    fuchs: { label: 'Fuchs', desc: 'Schlau, verspielt und ein kleiner Schlingel im Fell.' },
+  },
+},
+en: {
+  title: 'Pet Paradise',
+  tagline: "Feed, play and take care of your pets – they're counting on you!",
+  tabHome: '🏠 My Home ({n})', tabShelter: '🏕️ Shelter',
+  emptyTitle: 'Pretty empty in here …', emptyText: 'Adopt your first pet at the shelter!', emptyBtn: '🏕️ To the shelter',
+  adoptTitle: 'Adopt a {species}', adoptQuestion: 'What should your new pet be called?', namePlaceholder: 'Enter a name …',
+  cancel: 'Cancel', adoptBtn: 'Adopt 💚', level: 'Level',
+  actFeed: 'Feed', actPlay: 'Play', actSleep: 'Sleep', actWake: 'Wake up', actWash: 'Wash',
+  giveBack: '↩ back to the shelter', confirmBack: 'Do you really want to bring {name} back to the shelter?',
+  sleeping: '{name} is fast asleep … 💤',
+  need: { hunger: '{name} is really hungry! 🍖', fun: '{name} is terribly bored! 🥺', energy: '{name} is so tired … 🥱', clean: '{name} really needs a bath! 🫧' },
+  soft: { hunger: '{name} would like a snack.', fun: '{name} would love to play.', energy: '{name} is starting to yawn.', clean: '{name} could use a bath.' },
+  moodOk: '{name} is feeling good.', moodGreat: '{name} is overjoyed!',
+  msgFeed: 'Mmm, {food} – yummy! 😋', msgPlay: "That's so much fun! 🎾", msgTired: '{name} is too tired to play … 🥱',
+  msgBathNo: 'Yuck, water! 🙀', msgBathYes: 'Squeaky clean! ✨', msgNap: 'Shhh … nap time. 💤',
+  msgWake: 'That was a good sleep! ⚡', msgSlept: 'Well rested and full of energy! ⚡', msgLevel: 'Reached level {lvl}! 🎉', msgPet: '{name} loves your petting! ❤️',
+  toastIn: '{emoji} {name} has moved in with you!', toastBye: '{name} waves goodbye. 👋', toastBack: 'Welcome back! Your pets missed you. 🐾',
+  species: {
+    hund: { label: 'Dog', desc: 'Your most loyal friend – loves playing and cuddling.' },
+    katze: { label: 'Cat', desc: 'Elegant and cuddly, loves to sleep – but hates baths!' },
+    tiger: { label: 'Tiger', desc: 'A big hunter with a huge appetite. Not for beginners!' },
+    kaninchen: { label: 'Rabbit', desc: 'Hops around happily and nibbles all day long.' },
+    hamster: { label: 'Hamster', desc: 'Small, fluffy and always busy – needs lots of naps.' },
+    papagei: { label: 'Parrot', desc: 'Colorful and chatty – gets bored fast, wants action!' },
+    schildkroete: { label: 'Turtle', desc: 'Calm and super easy to care for. Perfect for beginners.' },
+    fuchs: { label: 'Fox', desc: 'Clever, playful and a little rascal.' },
+  },
+},
+ja: {
+  title: 'ペットパラダイス',
+  tagline: 'ごはんをあげて、遊んで、お世話をしよう – みんな待ってるよ！',
+  tabHome: '🏠 マイホーム ({n})', tabShelter: '🏕️ シェルター',
+  emptyTitle: 'まだ誰もいないね …', emptyText: 'シェルターで最初のペットを迎えよう！', emptyBtn: '🏕️ シェルターへ',
+  adoptTitle: '{species}を迎える', adoptQuestion: '名前を付けてあげよう！', namePlaceholder: '名前を入力 …',
+  cancel: 'キャンセル', adoptBtn: 'お迎えする 💚', level: 'レベル',
+  actFeed: 'ごはん', actPlay: 'あそぶ', actSleep: 'ねんね', actWake: 'おこす', actWash: 'おふろ',
+  giveBack: '↩ シェルターに返す', confirmBack: '{name}を本当にシェルターに返しますか？',
+  sleeping: '{name}はぐっすり眠っています … 💤',
+  need: { hunger: '{name}はお腹ペコペコ！🍖', fun: '{name}はとても退屈そう！🥺', energy: '{name}はとても眠そう … 🥱', clean: '{name}はお風呂が必要！🫧' },
+  soft: { hunger: '{name}はおやつが欲しいみたい。', fun: '{name}は遊びたそう。', energy: '{name}はあくびをしている。', clean: '{name}はお風呂に入りたいかも。' },
+  moodOk: '{name}は元気だよ。', moodGreat: '{name}はとってもハッピー！',
+  msgFeed: 'もぐもぐ、{food} おいしい！😋', msgPlay: 'たのしい！🎾', msgTired: '{name}は疲れて遊べない … 🥱',
+  msgBathNo: 'いやだ、水！🙀', msgBathYes: 'ピカピカ！✨', msgNap: 'しーっ … お昼寝タイム。💤',
+  msgWake: 'よく寝た！⚡', msgSlept: 'ぐっすり眠って元気いっぱい！⚡', msgLevel: 'レベル{lvl}になった！🎉', msgPet: '{name}はなでなでが大好き！❤️',
+  toastIn: '{emoji} {name}が家族になった！', toastBye: '{name}が手を振ってさよなら。👋', toastBack: 'おかえり！ペットたちが待ってたよ。🐾',
+  species: {
+    hund: { label: '犬', desc: 'いちばんの親友。遊ぶことと甘えることが大好き。' },
+    katze: { label: '猫', desc: '上品で甘えん坊。寝るのが大好き、でもお風呂は大嫌い！' },
+    tiger: { label: 'トラ', desc: '食いしん坊な大きなハンター。初心者には手ごわい！' },
+    kaninchen: { label: 'ウサギ', desc: '楽しくぴょんぴょん、いつもモグモグ。' },
+    hamster: { label: 'ハムスター', desc: '小さくてふわふわ、いつも忙しい。お昼寝が必要。' },
+    papagei: { label: 'オウム', desc: 'カラフルでおしゃべり。すぐ退屈しちゃう！' },
+    schildkroete: { label: 'カメ', desc: 'のんびり屋さんでお世話がとても簡単。初心者にぴったり。' },
+    fuchs: { label: 'キツネ', desc: 'かしこくて遊び好きな、ちょっといたずらっ子。' },
+  },
+},
+zh: {
+  title: '宠物乐园',
+  tagline: '喂食、玩耍、照顾你的宠物——它们都靠你啦！',
+  tabHome: '🏠 我的家 ({n})', tabShelter: '🏕️ 收容所',
+  emptyTitle: '这里还空空的 ……', emptyText: '去收容所领养你的第一只宠物吧！', emptyBtn: '🏕️ 去收容所',
+  adoptTitle: '领养{species}', adoptQuestion: '给你的新宠物取个名字吧！', namePlaceholder: '输入名字 ……',
+  cancel: '取消', adoptBtn: '领养 💚', level: '等级',
+  actFeed: '喂食', actPlay: '玩耍', actSleep: '睡觉', actWake: '叫醒', actWash: '洗澡',
+  giveBack: '↩ 送回收容所', confirmBack: '真的要把{name}送回收容所吗？',
+  sleeping: '{name}正在呼呼大睡 …… 💤',
+  need: { hunger: '{name}饿坏了！🍖', fun: '{name}好无聊！🥺', energy: '{name}好困 …… 🥱', clean: '{name}急需洗个澡！🫧' },
+  soft: { hunger: '{name}想吃点零食。', fun: '{name}想玩一玩。', energy: '{name}开始打哈欠了。', clean: '{name}该洗澡了。' },
+  moodOk: '{name}感觉不错。', moodGreat: '{name}开心极了！',
+  msgFeed: '好吃，{food} 真香！😋', msgPlay: '太好玩了！🎾', msgTired: '{name}太累了，玩不动 …… 🥱',
+  msgBathNo: '呀，水！🙀', msgBathYes: '干干净净！✨', msgNap: '嘘 …… 午睡时间。💤',
+  msgWake: '睡得真好！⚡', msgSlept: '睡饱了，充满活力！⚡', msgLevel: '升到{lvl}级啦！🎉', msgPet: '{name}喜欢你的抚摸！❤️',
+  toastIn: '{emoji} {name}搬进你家啦！', toastBye: '{name}挥手告别。👋', toastBack: '欢迎回来！宠物们想你了。🐾',
+  species: {
+    hund: { label: '狗', desc: '你最忠实的朋友——最爱玩耍和撒娇。' },
+    katze: { label: '猫', desc: '优雅又粘人，爱睡觉——但讨厌洗澡！' },
+    tiger: { label: '老虎', desc: '胃口超大的大猎手。新手慎养！' },
+    kaninchen: { label: '兔子', desc: '开心地蹦蹦跳跳，整天啃个不停。' },
+    hamster: { label: '仓鼠', desc: '小小的毛茸茸，总是忙个不停——需要很多小睡。' },
+    papagei: { label: '鹦鹉', desc: '色彩缤纷又健谈——很容易无聊，要多陪它玩！' },
+    schildkroete: { label: '乌龟', desc: '悠闲又省心。最适合新手。' },
+    fuchs: { label: '狐狸', desc: '聪明爱玩的小淘气。' },
+  },
+},
+fr: {
+  title: 'Paradis des Animaux',
+  tagline: 'Nourris, joue et prends soin de tes animaux – ils comptent sur toi !',
+  tabHome: '🏠 Ma maison ({n})', tabShelter: '🏕️ Refuge',
+  emptyTitle: "C'est bien vide ici …", emptyText: 'Adopte ton premier animal au refuge !', emptyBtn: '🏕️ Vers le refuge',
+  adoptTitle: 'Adopter : {species}', adoptQuestion: "Comment va s'appeler ton nouvel animal ?", namePlaceholder: 'Entre un nom …',
+  cancel: 'Annuler', adoptBtn: 'Adopter 💚', level: 'Niveau',
+  actFeed: 'Nourrir', actPlay: 'Jouer', actSleep: 'Dodo', actWake: 'Réveiller', actWash: 'Laver',
+  giveBack: '↩ retour au refuge', confirmBack: 'Veux-tu vraiment ramener {name} au refuge ?',
+  sleeping: '{name} dort profondément … 💤',
+  need: { hunger: '{name} a très faim ! 🍖', fun: "{name} s'ennuie terriblement ! 🥺", energy: '{name} est épuisé … 🥱', clean: "{name} a vraiment besoin d'un bain ! 🫧" },
+  soft: { hunger: '{name} aimerait un petit en-cas.', fun: '{name} aimerait bien jouer.', energy: '{name} commence à bâiller.', clean: "{name} aurait besoin d'un bain." },
+  moodOk: '{name} se sent bien.', moodGreat: '{name} est aux anges !',
+  msgFeed: 'Miam, {food} – délicieux ! 😋', msgPlay: 'Trop amusant ! 🎾', msgTired: '{name} est trop fatigué pour jouer … 🥱',
+  msgBathNo: "Beurk, de l'eau ! 🙀", msgBathYes: 'Tout propre ! ✨', msgNap: "Chut … c'est l'heure de la sieste. 💤",
+  msgWake: 'Bien dormi ! ⚡', msgSlept: "Bien reposé et plein d'énergie ! ⚡", msgLevel: 'Niveau {lvl} atteint ! 🎉', msgPet: '{name} adore tes caresses ! ❤️',
+  toastIn: '{emoji} {name} a emménagé chez toi !', toastBye: '{name} te fait signe au revoir. 👋', toastBack: "Content de te revoir ! Tes animaux t'attendaient. 🐾",
+  species: {
+    hund: { label: 'Chien', desc: 'Ton ami le plus fidèle – adore jouer et faire des câlins.' },
+    katze: { label: 'Chat', desc: 'Élégant et câlin, adore dormir – mais déteste le bain !' },
+    tiger: { label: 'Tigre', desc: "Un grand chasseur à l'appétit énorme. Pas pour les débutants !" },
+    kaninchen: { label: 'Lapin', desc: 'Sautille joyeusement et grignote sans arrêt.' },
+    hamster: { label: 'Hamster', desc: 'Petit, tout doux et toujours occupé – il lui faut plein de siestes.' },
+    papagei: { label: 'Perroquet', desc: "Coloré et bavard – s'ennuie vite, il veut de l'action !" },
+    schildkroete: { label: 'Tortue', desc: 'Tranquille et très facile à vivre. Parfaite pour débuter.' },
+    fuchs: { label: 'Renard', desc: 'Malin, joueur et un petit coquin.' },
+  },
+},
+it: {
+  title: 'Paradiso degli Animali',
+  tagline: 'Nutri, gioca e prenditi cura dei tuoi animali – contano su di te!',
+  tabHome: '🏠 Casa mia ({n})', tabShelter: '🏕️ Rifugio',
+  emptyTitle: 'Che vuoto qui …', emptyText: 'Adotta il tuo primo animale al rifugio!', emptyBtn: '🏕️ Al rifugio',
+  adoptTitle: 'Adotta: {species}', adoptQuestion: 'Come si chiamerà il tuo nuovo animale?', namePlaceholder: 'Scrivi un nome …',
+  cancel: 'Annulla', adoptBtn: 'Adotta 💚', level: 'Livello',
+  actFeed: 'Nutri', actPlay: 'Gioca', actSleep: 'Nanna', actWake: 'Sveglia', actWash: 'Lava',
+  giveBack: '↩ torna al rifugio', confirmBack: 'Vuoi davvero riportare {name} al rifugio?',
+  sleeping: '{name} dorme profondamente … 💤',
+  need: { hunger: '{name} ha una fame da lupi! 🍖', fun: '{name} si annoia tantissimo! 🥺', energy: '{name} è stanchissimo … 🥱', clean: '{name} ha proprio bisogno di un bagno! 🫧' },
+  soft: { hunger: '{name} vorrebbe uno spuntino.', fun: '{name} vorrebbe giocare.', energy: '{name} inizia a sbadigliare.', clean: '{name} avrebbe bisogno di un bagno.' },
+  moodOk: '{name} sta bene.', moodGreat: '{name} è felicissimo!',
+  msgFeed: 'Gnam, {food} – che buono! 😋', msgPlay: 'Che divertimento! 🎾', msgTired: '{name} è troppo stanco per giocare … 🥱',
+  msgBathNo: 'Bleah, acqua! 🙀', msgBathYes: 'Pulito e splendente! ✨', msgNap: 'Shhh … è ora del pisolino. 💤',
+  msgWake: 'Che bella dormita! ⚡', msgSlept: 'Riposato e pieno di energia! ⚡', msgLevel: 'Livello {lvl} raggiunto! 🎉', msgPet: '{name} adora le tue coccole! ❤️',
+  toastIn: '{emoji} {name} è venuto a vivere con te!', toastBye: '{name} ti saluta con la zampa. 👋', toastBack: 'Bentornato! I tuoi animali ti aspettavano. 🐾',
+  species: {
+    hund: { label: 'Cane', desc: 'Il tuo amico più fedele – adora giocare e le coccole.' },
+    katze: { label: 'Gatto', desc: 'Elegante e coccolone, ama dormire – ma odia il bagno!' },
+    tiger: { label: 'Tigre', desc: 'Un grande cacciatore con una fame enorme. Non per principianti!' },
+    kaninchen: { label: 'Coniglio', desc: 'Saltella felice e sgranocchia tutto il giorno.' },
+    hamster: { label: 'Criceto', desc: 'Piccolo, morbido e sempre indaffarato – gli servono tanti pisolini.' },
+    papagei: { label: 'Pappagallo', desc: 'Colorato e chiacchierone – si annoia in fretta, vuole azione!' },
+    schildkroete: { label: 'Tartaruga', desc: 'Tranquilla e facilissima da accudire. Perfetta per iniziare.' },
+    fuchs: { label: 'Volpe', desc: "Furba, giocherellona e un po' birichina." },
+  },
+},
+es: {
+  title: 'Paraíso de Mascotas',
+  tagline: 'Alimenta, juega y cuida a tus mascotas: ¡cuentan contigo!',
+  tabHome: '🏠 Mi casa ({n})', tabShelter: '🏕️ Refugio',
+  emptyTitle: 'Qué vacío está esto …', emptyText: '¡Adopta tu primera mascota en el refugio!', emptyBtn: '🏕️ Al refugio',
+  adoptTitle: 'Adoptar: {species}', adoptQuestion: '¿Cómo se llamará tu nueva mascota?', namePlaceholder: 'Escribe un nombre …',
+  cancel: 'Cancelar', adoptBtn: 'Adoptar 💚', level: 'Nivel',
+  actFeed: 'Alimentar', actPlay: 'Jugar', actSleep: 'Dormir', actWake: 'Despertar', actWash: 'Bañar',
+  giveBack: '↩ devolver al refugio', confirmBack: '¿De verdad quieres devolver a {name} al refugio?',
+  sleeping: '{name} duerme profundamente … 💤',
+  need: { hunger: '¡{name} tiene muchísima hambre! 🍖', fun: '¡{name} está súper aburrido! 🥺', energy: '{name} está agotado … 🥱', clean: '¡{name} necesita un baño urgente! 🫧' },
+  soft: { hunger: 'A {name} le apetece un snack.', fun: 'A {name} le gustaría jugar.', energy: '{name} empieza a bostezar.', clean: 'A {name} le vendría bien un baño.' },
+  moodOk: '{name} se siente bien.', moodGreat: '¡{name} está feliz de la vida!',
+  msgFeed: 'Ñam, {food} – ¡qué rico! 😋', msgPlay: '¡Qué divertido! 🎾', msgTired: '{name} está demasiado cansado para jugar … 🥱',
+  msgBathNo: '¡Puaj, agua! 🙀', msgBathYes: '¡Reluciente! ✨', msgNap: 'Shhh … hora de la siesta. 💤',
+  msgWake: '¡Qué bien he dormido! ⚡', msgSlept: '¡Descansado y lleno de energía! ⚡', msgLevel: '¡Nivel {lvl} alcanzado! 🎉', msgPet: '¡A {name} le encantan tus mimos! ❤️',
+  toastIn: '¡{emoji} {name} se ha mudado contigo!', toastBye: '{name} se despide con la patita. 👋', toastBack: '¡Bienvenido de vuelta! Tus mascotas te echaban de menos. 🐾',
+  species: {
+    hund: { label: 'Perro', desc: 'Tu amigo más fiel: le encanta jugar y los mimos.' },
+    katze: { label: 'Gato', desc: 'Elegante y mimoso, adora dormir… ¡pero odia bañarse!' },
+    tiger: { label: 'Tigre', desc: 'Un gran cazador con un hambre enorme. ¡No apto para principiantes!' },
+    kaninchen: { label: 'Conejo', desc: 'Salta feliz por todas partes y mordisquea sin parar.' },
+    hamster: { label: 'Hámster', desc: 'Pequeño, peludo y siempre ocupado: necesita muchas siestas.' },
+    papagei: { label: 'Loro', desc: 'Colorido y parlanchín: se aburre rápido, ¡quiere acción!' },
+    schildkroete: { label: 'Tortuga', desc: 'Tranquila y facilísima de cuidar. Perfecta para empezar.' },
+    fuchs: { label: 'Zorro', desc: 'Listo, juguetón y un poco pillo.' },
+  },
+},
+fi: {
+  title: 'Lemmikkiparatiisi',
+  tagline: 'Ruoki, leiki ja pidä huolta lemmikeistäsi – ne luottavat sinuun!',
+  tabHome: '🏠 Kotini ({n})', tabShelter: '🏕️ Eläinkoti',
+  emptyTitle: 'Aika tyhjää täällä …', emptyText: 'Adoptoi ensimmäinen lemmikkisi eläinkodista!', emptyBtn: '🏕️ Eläinkotiin',
+  adoptTitle: 'Adoptoi: {species}', adoptQuestion: 'Minkä nimen annat uudelle lemmikillesi?', namePlaceholder: 'Kirjoita nimi …',
+  cancel: 'Peruuta', adoptBtn: 'Adoptoi 💚', level: 'Taso',
+  actFeed: 'Ruoki', actPlay: 'Leiki', actSleep: 'Nukkumaan', actWake: 'Herätä', actWash: 'Pese',
+  giveBack: '↩ takaisin eläinkotiin', confirmBack: 'Palautetaanko {name} varmasti eläinkotiin?',
+  sleeping: '{name} nukkuu sikeästi … 💤',
+  need: { hunger: '{name} on tosi nälkäinen! 🍖', fun: '{name} on kamalan tylsistynyt! 🥺', energy: '{name} on ihan väsynyt … 🥱', clean: '{name} tarvitsee kylvyn heti! 🫧' },
+  soft: { hunger: '{name} haluaisi välipalan.', fun: '{name} haluaisi leikkiä.', energy: '{name} alkaa haukotella.', clean: '{name} kaipaisi kylpyä.' },
+  moodOk: '{name} voi hyvin.', moodGreat: '{name} on onnensa kukkuloilla!',
+  msgFeed: 'Nam, {food} – herkullista! 😋', msgPlay: 'Tämä on hauskaa! 🎾', msgTired: '{name} on liian väsynyt leikkimään … 🥱',
+  msgBathNo: 'Yök, vettä! 🙀', msgBathYes: 'Putipuhdas! ✨', msgNap: 'Shh … päiväunien aika. 💤',
+  msgWake: 'Hyvin nukuttu! ⚡', msgSlept: 'Levännyt ja täynnä energiaa! ⚡', msgLevel: 'Taso {lvl} saavutettu! 🎉', msgPet: '{name} rakastaa silityksiäsi! ❤️',
+  toastIn: '{emoji} {name} muutti luoksesi!', toastBye: '{name} vilkuttaa hyvästiksi. 👋', toastBack: 'Tervetuloa takaisin! Lemmikkisi kaipasivat sinua. 🐾',
+  species: {
+    hund: { label: 'Koira', desc: 'Uskollisin ystäväsi – rakastaa leikkimistä ja rapsutuksia.' },
+    katze: { label: 'Kissa', desc: 'Tyylikäs ja lempeä, nukkuu mielellään – mutta vihaa kylpyjä!' },
+    tiger: { label: 'Tiikeri', desc: 'Suuri metsästäjä, jolla on valtava nälkä. Ei aloittelijoille!' },
+    kaninchen: { label: 'Kani', desc: 'Pomppii iloisesti ja napostelee koko ajan.' },
+    hamster: { label: 'Hamsteri', desc: 'Pieni, pörröinen ja aina touhukas – tarvitsee paljon päiväunia.' },
+    papagei: { label: 'Papukaija', desc: 'Värikäs ja puhelias – tylsistyy nopeasti, haluaa toimintaa!' },
+    schildkroete: { label: 'Kilpikonna', desc: 'Rauhallinen ja tosi helppohoitoinen. Täydellinen aloittelijalle.' },
+    fuchs: { label: 'Kettu', desc: 'Fiksu, leikkisä ja pieni veijari.' },
+  },
+},
+no: {
+  title: 'Kjæledyrparadis',
+  tagline: 'Mat, lek og ta vare på dyrene dine – de stoler på deg!',
+  tabHome: '🏠 Hjemme ({n})', tabShelter: '🏕️ Dyrehjem',
+  emptyTitle: 'Ganske tomt her …', emptyText: 'Adopter ditt første kjæledyr på dyrehjemmet!', emptyBtn: '🏕️ Til dyrehjemmet',
+  adoptTitle: 'Adopter: {species}', adoptQuestion: 'Hva skal det nye kjæledyret ditt hete?', namePlaceholder: 'Skriv et navn …',
+  cancel: 'Avbryt', adoptBtn: 'Adopter 💚', level: 'Nivå',
+  actFeed: 'Mat', actPlay: 'Lek', actSleep: 'Sove', actWake: 'Vekk', actWash: 'Vask',
+  giveBack: '↩ tilbake til dyrehjemmet', confirmBack: 'Vil du virkelig levere {name} tilbake til dyrehjemmet?',
+  sleeping: '{name} sover dypt … 💤',
+  need: { hunger: '{name} er skrubbsulten! 🍖', fun: '{name} kjeder seg fælt! 🥺', energy: '{name} er kjempetrøtt … 🥱', clean: '{name} trenger virkelig et bad! 🫧' },
+  soft: { hunger: '{name} vil gjerne ha en matbit.', fun: '{name} vil gjerne leke.', energy: '{name} begynner å gjespe.', clean: '{name} kunne trengt et bad.' },
+  moodOk: '{name} har det bra.', moodGreat: '{name} er kjempeglad!',
+  msgFeed: 'Nam, {food} – nydelig! 😋', msgPlay: 'Så gøy! 🎾', msgTired: '{name} er for trøtt til å leke … 🥱',
+  msgBathNo: 'Æsj, vann! 🙀', msgBathYes: 'Skinnende ren! ✨', msgNap: 'Hysj … tid for en lur. 💤',
+  msgWake: 'Godt sovet! ⚡', msgSlept: 'Uthvilt og full av energi! ⚡', msgLevel: 'Nådde nivå {lvl}! 🎉', msgPet: '{name} elsker kosen din! ❤️',
+  toastIn: '{emoji} {name} har flyttet inn hos deg!', toastBye: '{name} vinker farvel. 👋', toastBack: 'Velkommen tilbake! Dyrene dine har savnet deg. 🐾',
+  species: {
+    hund: { label: 'Hund', desc: 'Din mest trofaste venn – elsker å leke og kose.' },
+    katze: { label: 'Katt', desc: 'Elegant og kosete, elsker å sove – men hater bad!' },
+    tiger: { label: 'Tiger', desc: 'En stor jeger med enorm appetitt. Ikke for nybegynnere!' },
+    kaninchen: { label: 'Kanin', desc: 'Hopper glad rundt og gnager hele dagen.' },
+    hamster: { label: 'Hamster', desc: 'Liten, myk og alltid travel – trenger mange lurer.' },
+    papagei: { label: 'Papegøye', desc: 'Fargerik og pratsom – kjeder seg fort, vil ha action!' },
+    schildkroete: { label: 'Skilpadde', desc: 'Rolig og superenkel å stelle. Perfekt for nybegynnere.' },
+    fuchs: { label: 'Rev', desc: 'Lur, leken og en liten rampunge.' },
+  },
+},
+sv: {
+  title: 'Husdjursparadiset',
+  tagline: 'Mata, lek och ta hand om dina husdjur – de räknar med dig!',
+  tabHome: '🏠 Mitt hem ({n})', tabShelter: '🏕️ Djurhem',
+  emptyTitle: 'Ganska tomt här …', emptyText: 'Adoptera ditt första husdjur på djurhemmet!', emptyBtn: '🏕️ Till djurhemmet',
+  adoptTitle: 'Adoptera: {species}', adoptQuestion: 'Vad ska ditt nya husdjur heta?', namePlaceholder: 'Skriv ett namn …',
+  cancel: 'Avbryt', adoptBtn: 'Adoptera 💚', level: 'Nivå',
+  actFeed: 'Mata', actPlay: 'Leka', actSleep: 'Sova', actWake: 'Väck', actWash: 'Tvätta',
+  giveBack: '↩ tillbaka till djurhemmet', confirmBack: 'Vill du verkligen lämna tillbaka {name} till djurhemmet?',
+  sleeping: '{name} sover djupt … 💤',
+  need: { hunger: '{name} är jättehungrig! 🍖', fun: '{name} har jättetråkigt! 🥺', energy: '{name} är jättetrött … 🥱', clean: '{name} behöver verkligen ett bad! 🫧' },
+  soft: { hunger: '{name} skulle vilja ha ett mellanmål.', fun: '{name} skulle vilja leka.', energy: '{name} börjar gäspa.', clean: '{name} skulle må bra av ett bad.' },
+  moodOk: '{name} mår bra.', moodGreat: '{name} är överlycklig!',
+  msgFeed: 'Mums, {food} – jättegott! 😋', msgPlay: 'Så kul! 🎾', msgTired: '{name} är för trött för att leka … 🥱',
+  msgBathNo: 'Usch, vatten! 🙀', msgBathYes: 'Skinande ren! ✨', msgNap: 'Sch … dags för en tupplur. 💤',
+  msgWake: 'Gott sovet! ⚡', msgSlept: 'Utvilad och full av energi! ⚡', msgLevel: 'Nådde nivå {lvl}! 🎉', msgPet: '{name} älskar dina klappar! ❤️',
+  toastIn: '{emoji} {name} har flyttat in hos dig!', toastBye: '{name} vinkar hejdå. 👋', toastBack: 'Välkommen tillbaka! Dina husdjur har saknat dig. 🐾',
+  species: {
+    hund: { label: 'Hund', desc: 'Din mest trogna vän – älskar att leka och gosa.' },
+    katze: { label: 'Katt', desc: 'Elegant och gosig, älskar att sova – men hatar bad!' },
+    tiger: { label: 'Tiger', desc: 'En stor jägare med enorm aptit. Inget för nybörjare!' },
+    kaninchen: { label: 'Kanin', desc: 'Skuttar glatt omkring och knaprar hela dagen.' },
+    hamster: { label: 'Hamster', desc: 'Liten, fluffig och alltid upptagen – behöver många tupplurar.' },
+    papagei: { label: 'Papegoja', desc: 'Färgglad och pratsam – blir uttråkad snabbt, vill ha action!' },
+    schildkroete: { label: 'Sköldpadda', desc: 'Lugn och superlätt att sköta. Perfekt för nybörjare.' },
+    fuchs: { label: 'Räv', desc: 'Smart, lekfull och en liten rackare.' },
+  },
+},
+};
+
+let lang = detectLang();
+function detectLang() {
+  let saved = null;
+  try { saved = localStorage.getItem('haustierLang'); } catch (e) { /* privater Modus */ }
+  if (saved && I18N[saved]) return saved;
+  const nav = (navigator.language || 'de').slice(0, 2).toLowerCase();
+  const alias = { nb: 'no', nn: 'no' };
+  const code = alias[nav] || nav;
+  return I18N[code] ? code : 'de';
+}
+function T() { return I18N[lang]; }
+function fmt(str, vars) { return str.replace(/\{(\w+)\}/g, (_, k) => (vars && vars[k] !== undefined) ? vars[k] : ''); }
+
+function setLang(code) {
+  if (!I18N[code]) return;
+  lang = code;
+  try { localStorage.setItem('haustierLang', code); } catch (e) { /* privater Modus */ }
+  applyLang();
+}
+
+function applyLang() {
+  const t = T();
+  document.documentElement.lang = lang;
+  document.title = '🐾 ' + t.title;
+  document.getElementById('appTitle').textContent = '🐾 ' + t.title;
+  document.getElementById('appTagline').textContent = t.tagline;
+  document.getElementById('tabShelter').textContent = t.tabShelter;
+  document.getElementById('emptyTitle').textContent = t.emptyTitle;
+  document.getElementById('emptyText').textContent = t.emptyText;
+  document.getElementById('emptyBtn').textContent = t.emptyBtn;
+  document.getElementById('modalQuestion').textContent = t.adoptQuestion;
+  document.getElementById('nameInput').placeholder = t.namePlaceholder;
+  document.getElementById('mCancel').textContent = t.cancel;
+  document.getElementById('mOk').textContent = t.adoptBtn;
+  document.getElementById('langSelect').value = lang;
+  renderShelter();
+  renderHome();
+}
+
 /* ================= Tierarten ================= */
 const SPECIES = [
-  { key: 'hund',        emoji: '🐕', label: 'Hund',        food: '🦴', desc: 'Dein treuster Freund – will ganz viel spielen und kuscheln.',   names: ['Bello', 'Rex', 'Luna', 'Rocky'],    rates: { hunger: 1.1, fun: 1.3, energy: 1.0, clean: 1.1 }, bath: 0 },
-  { key: 'katze',       emoji: '🐈', label: 'Katze',       food: '🐟', desc: 'Elegant und verschmust, schläft gern – hasst aber Baden!',      names: ['Minka', 'Felix', 'Mia', 'Simba'],   rates: { hunger: 1.0, fun: 0.9, energy: 1.2, clean: 0.7 }, bath: -15 },
-  { key: 'tiger',       emoji: '🐅', label: 'Tiger',       food: '🥩', desc: 'Ein grosser Jäger mit riesigem Hunger. Nichts für Anfänger!',   names: ['Raja', 'Kira', 'Diego', 'Shira'],   rates: { hunger: 1.6, fun: 1.1, energy: 1.0, clean: 0.8 }, bath: -10 },
-  { key: 'kaninchen',   emoji: '🐇', label: 'Kaninchen',   food: '🥕', desc: 'Hoppelt fröhlich herum und knabbert einfach ständig.',          names: ['Hoppel', 'Schnuffel', 'Momo', 'Flecki'], rates: { hunger: 1.3, fun: 1.0, energy: 0.9, clean: 1.0 }, bath: 0 },
-  { key: 'hamster',     emoji: '🐹', label: 'Hamster',     food: '🌻', desc: 'Klein, flauschig und immer am Wuseln – braucht viele Nickerchen.', names: ['Krümel', 'Nugget', 'Peanut', 'Speedy'], rates: { hunger: 1.2, fun: 1.0, energy: 1.3, clean: 0.9 }, bath: 0 },
-  { key: 'papagei',     emoji: '🦜', label: 'Papagei',     food: '🍎', desc: 'Bunt und gesprächig – langweilt sich schnell, will Action!',    names: ['Coco', 'Rio', 'Kiwi', 'Polly'],     rates: { hunger: 1.0, fun: 1.4, energy: 1.0, clean: 0.8 }, bath: 5 },
-  { key: 'schildkroete', emoji: '🐢', label: 'Schildkröte', food: '🥬', desc: 'Gemütlich und super pflegeleicht. Perfekt für Einsteiger.',    names: ['Berta', 'Kai', 'Tuki', 'Emma'],     rates: { hunger: 0.6, fun: 0.6, energy: 0.7, clean: 0.6 }, bath: 5 },
-  { key: 'fuchs',       emoji: '🦊', label: 'Fuchs',       food: '🍗', desc: 'Schlau, verspielt und ein kleiner Schlingel im Fell.',          names: ['Foxi', 'Rusty', 'Finn', 'Amber'],   rates: { hunger: 1.2, fun: 1.2, energy: 1.0, clean: 1.2 }, bath: -5 },
+  { key: 'hund',        emoji: '🐕', food: '🦴', names: ['Bello', 'Rex', 'Luna', 'Rocky'],        rates: { hunger: 1.1, fun: 1.3, energy: 1.0, clean: 1.1 }, bath: 0 },
+  { key: 'katze',       emoji: '🐈', food: '🐟', names: ['Minka', 'Felix', 'Mia', 'Simba'],       rates: { hunger: 1.0, fun: 0.9, energy: 1.2, clean: 0.7 }, bath: -15 },
+  { key: 'tiger',       emoji: '🐅', food: '🥩', names: ['Raja', 'Kira', 'Diego', 'Shira'],       rates: { hunger: 1.6, fun: 1.1, energy: 1.0, clean: 0.8 }, bath: -10 },
+  { key: 'kaninchen',   emoji: '🐇', food: '🥕', names: ['Hoppel', 'Schnuffel', 'Momo', 'Flecki'], rates: { hunger: 1.3, fun: 1.0, energy: 0.9, clean: 1.0 }, bath: 0 },
+  { key: 'hamster',     emoji: '🐹', food: '🌻', names: ['Krümel', 'Nugget', 'Peanut', 'Speedy'], rates: { hunger: 1.2, fun: 1.0, energy: 1.3, clean: 0.9 }, bath: 0 },
+  { key: 'papagei',     emoji: '🦜', food: '🍎', names: ['Coco', 'Rio', 'Kiwi', 'Polly'],         rates: { hunger: 1.0, fun: 1.4, energy: 1.0, clean: 0.8 }, bath: 5 },
+  { key: 'schildkroete', emoji: '🐢', food: '🥬', names: ['Berta', 'Kai', 'Tuki', 'Emma'],        rates: { hunger: 0.6, fun: 0.6, energy: 0.7, clean: 0.6 }, bath: 5 },
+  { key: 'fuchs',       emoji: '🦊', food: '🍗', names: ['Foxi', 'Rusty', 'Finn', 'Amber'],       rates: { hunger: 1.2, fun: 1.2, energy: 1.0, clean: 1.2 }, bath: -5 },
 ];
 
 /* Basis-Abnahme pro Minute (wird mit Arten-Faktor multipliziert) */
 const DECAY = { hunger: 4.5, fun: 3.5, energy: 2.5, clean: 2.5 };
 const STATS = [
-  { key: 'hunger', ico: '🍖', label: 'Futter' },
-  { key: 'fun',    ico: '😊', label: 'Glück' },
-  { key: 'energy', ico: '⚡', label: 'Energie' },
-  { key: 'clean',  ico: '🧼', label: 'Sauberkeit' },
+  { key: 'hunger', ico: '🍖' },
+  { key: 'fun',    ico: '😊' },
+  { key: 'energy', ico: '⚡' },
+  { key: 'clean',  ico: '🧼' },
 ];
 const MAX_CATCHUP_MIN = 120;   // Offline-Zeit wird auf 2 h begrenzt
 const SLEEP_SECONDS = 20;
@@ -501,7 +854,7 @@ function load() {
   if (elapsedMin > 0.5) {
     state.pets.forEach(p => applyDecay(p, elapsedMin));
     if (elapsedMin > 2) {
-      setTimeout(() => toast('Willkommen zurück! Deine Tiere haben dich vermisst. 🐾'), 600);
+      setTimeout(() => toast(T().toastBack), 600);
     }
   }
   state.pets.forEach(p => { p.sleepUntil = 0; }); // nach Neuladen ist niemand mehr im Nickerchen
@@ -509,6 +862,7 @@ function load() {
 
 /* ================= Spiel-Logik ================= */
 function speciesOf(pet) { return SPECIES.find(s => s.key === pet.species) || SPECIES[0]; }
+function speciesLabel(key) { return (T().species[key] || T().species.hund).label; }
 function clamp(v) { return Math.max(0, Math.min(100, v)); }
 
 function applyDecay(pet, minutes) {
@@ -532,7 +886,7 @@ function gainXp(pet, amount) {
     pet.xp -= needed;
     pet.level += 1;
     needed = xpNeeded(pet.level);
-    setMessage(pet, `Level ${pet.level} erreicht! 🎉`, 4000);
+    setMessage(pet, fmt(T().msgLevel, { lvl: pet.level }), 4000);
     burst(pet.id, ['🎉', '⭐', '🎊', '⭐'], 8);
   }
 }
@@ -545,33 +899,33 @@ function setMessage(pet, text, ms = 3200) {
 }
 
 function moodOf(pet) {
+  const t = T();
   if (pet.sleepUntil > Date.now()) {
-    return { emoji: '😴', text: `${pet.name} schläft tief und fest … 💤`, cls: 'sleeping' };
+    return { emoji: '😴', text: fmt(t.sleeping, { name: pet.name }), cls: 'sleeping' };
   }
   const worst = STATS.reduce((a, b) => (pet[a.key] <= pet[b.key] ? a : b));
   const v = pet[worst.key];
-  const need = { hunger: 'hat riesigen Hunger! 🍖', fun: 'langweilt sich furchtbar! 🥺', energy: 'ist total müde … 🥱', clean: 'braucht dringend ein Bad! 🫧' };
-  const soft = { hunger: 'hätte gern einen Snack.', fun: 'würde gern spielen.', energy: 'gähnt schon ein bisschen.', clean: 'könnte ein Bad vertragen.' };
-  if (v < 20) return { emoji: '😢', text: `${pet.name} ${need[worst.key]}`, cls: 'sad' };
-  if (v < 45) return { emoji: '😕', text: `${pet.name} ${soft[worst.key]}`, cls: '' };
-  if (v < 70) return { emoji: '🙂', text: `${pet.name} fühlt sich wohl.`, cls: '' };
-  return { emoji: '😄', text: `${pet.name} ist überglücklich!`, cls: '' };
+  if (v < 20) return { emoji: '😢', text: fmt(t.need[worst.key], { name: pet.name }), cls: 'sad' };
+  if (v < 45) return { emoji: '😕', text: fmt(t.soft[worst.key], { name: pet.name }), cls: '' };
+  if (v < 70) return { emoji: '🙂', text: fmt(t.moodOk, { name: pet.name }), cls: '' };
+  return { emoji: '😄', text: fmt(t.moodGreat, { name: pet.name }), cls: '' };
 }
 
 /* ================= Aktionen ================= */
 function doAction(id, action) {
   const pet = state.pets.find(p => p.id === id);
   if (!pet) return;
+  const t = T();
   const sp = speciesOf(pet);
   const sleeping = pet.sleepUntil > Date.now();
 
   if (action === 'sleep') {
     if (sleeping) {
       pet.sleepUntil = 0;
-      setMessage(pet, 'Gut geschlafen! ⚡');
+      setMessage(pet, t.msgWake);
     } else {
       pet.sleepUntil = Date.now() + SLEEP_SECONDS * 1000;
-      setMessage(pet, 'Pssst … Nickerchen-Zeit. 💤', SLEEP_SECONDS * 1000);
+      setMessage(pet, t.msgNap, SLEEP_SECONDS * 1000);
       burst(id, ['💤'], 3);
     }
   } else if (sleeping) {
@@ -579,24 +933,24 @@ function doAction(id, action) {
   } else if (action === 'feed') {
     pet.hunger = clamp(pet.hunger + 35);
     pet.clean = clamp(pet.clean - 4);
-    setMessage(pet, `Mmmh, ${sp.food} – lecker! 😋`);
+    setMessage(pet, fmt(t.msgFeed, { food: sp.food }));
     burst(id, [sp.food, '😋', sp.food], 5);
     gainXp(pet, 5);
   } else if (action === 'play') {
     if (pet.energy < 10) {
-      setMessage(pet, `${pet.name} ist zu müde zum Spielen … 🥱`);
+      setMessage(pet, fmt(t.msgTired, { name: pet.name }));
     } else {
       pet.fun = clamp(pet.fun + 35);
       pet.energy = clamp(pet.energy - 12);
       pet.hunger = clamp(pet.hunger - 6);
-      setMessage(pet, 'Das macht Spass! 🎾');
+      setMessage(pet, t.msgPlay);
       burst(id, ['🎾', '❤️', '🎉'], 6);
       gainXp(pet, 8);
     }
   } else if (action === 'wash') {
     pet.clean = clamp(pet.clean + 45);
     pet.fun = clamp(pet.fun + sp.bath);
-    setMessage(pet, sp.bath < 0 ? 'Bäh, Wasser! 🙀' : 'Blitzeblank! ✨');
+    setMessage(pet, sp.bath < 0 ? t.msgBathNo : t.msgBathYes);
     burst(id, ['🫧', '💦', '🧼'], 6);
     gainXp(pet, 5);
   }
@@ -609,7 +963,7 @@ function doAction(id, action) {
 function pokePet(id) {
   const pet = state.pets.find(p => p.id === id);
   if (!pet || pet.sleepUntil > Date.now()) return;
-  setMessage(pet, `${pet.name} freut sich über deine Streicheleinheit! ❤️`);
+  setMessage(pet, fmt(T().msgPet, { name: pet.name }));
   burst(id, ['❤️'], 3);
   wigglePet(id);
   updateCard(pet);
@@ -618,11 +972,11 @@ function pokePet(id) {
 function giveBack(id) {
   const pet = state.pets.find(p => p.id === id);
   if (!pet) return;
-  if (!confirm(`Möchtest du ${pet.name} wirklich zurück ins Tierheim bringen?`)) return;
+  if (!confirm(fmt(T().confirmBack, { name: pet.name }))) return;
   state.pets = state.pets.filter(p => p.id !== id);
   save();
   renderHome();
-  toast(`${pet.name} winkt dir zum Abschied. 👋`);
+  toast(fmt(T().toastBye, { name: pet.name }));
 }
 
 /* ================= Adoption ================= */
@@ -632,7 +986,7 @@ function openAdopt(key) {
   adoptKey = key;
   const sp = SPECIES.find(s => s.key === key);
   document.getElementById('modalEmoji').textContent = sp.emoji;
-  document.getElementById('modalTitle').textContent = sp.label + ' adoptieren';
+  document.getElementById('modalTitle').textContent = fmt(T().adoptTitle, { species: speciesLabel(key) });
   const input = document.getElementById('nameInput');
   input.value = sp.names[Math.floor(Math.random() * sp.names.length)];
   document.getElementById('modalOverlay').classList.add('open');
@@ -658,7 +1012,7 @@ function confirmAdopt() {
   save();
   closeModal();
   showTab('home');
-  toast(`${sp.emoji} ${name} ist bei dir eingezogen!`);
+  toast(fmt(T().toastIn, { emoji: sp.emoji, name }));
 }
 
 /* ================= Darstellung ================= */
@@ -671,21 +1025,23 @@ function showTab(tab) {
 }
 
 function renderShelter() {
+  const t = T();
   const grid = document.getElementById('shelterGrid');
   grid.innerHTML = SPECIES.map(sp => `
     <div class="shelter-card">
       <span class="shelter-emoji">${sp.emoji}</span>
-      <h3>${sp.label}</h3>
-      <p>${sp.desc}</p>
-      <button class="adopt-btn" onclick="openAdopt('${sp.key}')">Adoptieren 💚</button>
+      <h3>${escapeHtml(t.species[sp.key].label)}</h3>
+      <p>${escapeHtml(t.species[sp.key].desc)}</p>
+      <button class="adopt-btn" onclick="openAdopt('${sp.key}')">${escapeHtml(t.adoptBtn)}</button>
     </div>
   `).join('');
 }
 
 function renderHome() {
+  const t = T();
   const grid = document.getElementById('homeGrid');
   const empty = document.getElementById('emptyHome');
-  document.getElementById('tabHome').textContent = `🏠 Mein Zuhause (${state.pets.length})`;
+  document.getElementById('tabHome').textContent = fmt(t.tabHome, { n: state.pets.length });
   empty.style.display = state.pets.length ? 'none' : '';
   grid.innerHTML = state.pets.map(pet => {
     const sp = speciesOf(pet);
@@ -694,9 +1050,9 @@ function renderHome() {
       <div class="pet-top">
         <div>
           <div class="pet-name">${escapeHtml(pet.name)}</div>
-          <div class="pet-species">${sp.emoji} ${sp.label}</div>
+          <div class="pet-species">${sp.emoji} ${escapeHtml(t.species[sp.key].label)}</div>
         </div>
-        <div class="level-badge">Level <span class="lvl">1</span><span class="xp-mini"><span class="xp">0</span> XP</span></div>
+        <div class="level-badge"><span class="lvl-line"></span><span class="xp-mini"><span class="xp"></span> XP</span></div>
       </div>
       <div class="pet-stage">
         <span class="mood-emoji"></span>
@@ -712,12 +1068,12 @@ function renderHome() {
           </div>`).join('')}
       </div>
       <div class="actions">
-        <button class="act act-feed"  onclick="doAction(${pet.id}, 'feed')"><span class="big">🍖</span>Füttern</button>
-        <button class="act act-play"  onclick="doAction(${pet.id}, 'play')"><span class="big">🎾</span>Spielen</button>
-        <button class="act act-sleep" onclick="doAction(${pet.id}, 'sleep')"><span class="big">💤</span><span class="sleep-label">Schlafen</span></button>
-        <button class="act act-wash"  onclick="doAction(${pet.id}, 'wash')"><span class="big">🛁</span>Waschen</button>
+        <button class="act act-feed"  onclick="doAction(${pet.id}, 'feed')"><span class="big">🍖</span>${escapeHtml(t.actFeed)}</button>
+        <button class="act act-play"  onclick="doAction(${pet.id}, 'play')"><span class="big">🎾</span>${escapeHtml(t.actPlay)}</button>
+        <button class="act act-sleep" onclick="doAction(${pet.id}, 'sleep')"><span class="big">💤</span><span class="sleep-label"></span></button>
+        <button class="act act-wash"  onclick="doAction(${pet.id}, 'wash')"><span class="big">🛁</span>${escapeHtml(t.actWash)}</button>
       </div>
-      <button class="give-back" onclick="giveBack(${pet.id})">↩ zurück ins Tierheim</button>
+      <button class="give-back" onclick="giveBack(${pet.id})">${escapeHtml(t.giveBack)}</button>
     </div>`;
   }).join('');
   state.pets.forEach(updateCard);
@@ -726,17 +1082,18 @@ function renderHome() {
 function updateCard(pet) {
   const card = document.getElementById('pet-' + pet.id);
   if (!card) return;
+  const t = T();
   const sleeping = pet.sleepUntil > Date.now();
   const mood = moodOf(pet);
 
   card.classList.toggle('sleeping', sleeping);
   card.classList.toggle('sad', mood.cls === 'sad');
-  card.querySelector('.lvl').textContent = pet.level;
+  card.querySelector('.lvl-line').textContent = `${t.level} ${pet.level}`;
   card.querySelector('.xp').textContent = `${Math.floor(pet.xp)} / ${xpNeeded(pet.level)}`;
   card.querySelector('.mood-emoji').textContent = mood.emoji;
 
-  const t = tempMsg[pet.id];
-  card.querySelector('.bubble').textContent = (t && t.until > Date.now()) ? t.text : mood.text;
+  const m = tempMsg[pet.id];
+  card.querySelector('.bubble').textContent = (m && m.until > Date.now()) ? m.text : mood.text;
 
   STATS.forEach(st => {
     const v = Math.round(pet[st.key]);
@@ -747,7 +1104,7 @@ function updateCard(pet) {
     card.querySelector(`.stat-val[data-val="${st.key}"]`).textContent = v;
   });
 
-  card.querySelector('.sleep-label').textContent = sleeping ? 'Wecken' : 'Schlafen';
+  card.querySelector('.sleep-label').textContent = sleeping ? t.actWake : t.actSleep;
   card.querySelectorAll('.act-feed, .act-play, .act-wash').forEach(b => { b.disabled = sleeping; });
 }
 
@@ -798,7 +1155,7 @@ setInterval(() => {
     const wasSleeping = pet.sleepUntil > now - 1000;
     applyDecay(pet, minutes);
     if (wasSleeping && pet.sleepUntil <= Date.now() && pet.energy >= 99) {
-      setMessage(pet, 'Ausgeschlafen und voller Energie! ⚡');
+      setMessage(pet, T().msgSlept);
     }
     updateCard(pet);
   });
@@ -811,9 +1168,10 @@ document.getElementById('nameInput').addEventListener('keydown', e => {
 });
 
 /* ================= Start ================= */
+document.getElementById('langSelect').innerHTML = LANGS.map(l =>
+  `<option value="${l.code}">${l.flag} ${l.name}</option>`).join('');
 load();
-renderShelter();
-renderHome();
+applyLang();
 </script>
 </body>
 </html>
