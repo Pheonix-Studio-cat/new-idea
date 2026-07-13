@@ -60,6 +60,23 @@
     text-align: center;
   }
 
+  /* ---------- Münz-Anzeige ---------- */
+  #coinChip {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 40;
+    background: linear-gradient(135deg, #fde68a, #f59e0b);
+    color: #713f12;
+    font-weight: 900;
+    font-size: 1rem;
+    padding: 9px 16px;
+    border-radius: 999px;
+    box-shadow: 0 4px 14px rgba(180, 120, 20, 0.35);
+    transition: transform 0.2s;
+  }
+  #coinChip.bump { transform: scale(1.25) rotate(-4deg); }
+
   .tabs {
     display: flex;
     justify-content: center;
@@ -289,6 +306,17 @@
   }
 
   /* ---------- Tierheim ---------- */
+  .shelter-info {
+    margin-top: 14px;
+    background: rgba(255, 255, 255, 0.75);
+    border-radius: 999px;
+    padding: 11px 20px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #7c4a12;
+    box-shadow: 0 3px 10px rgba(90, 60, 20, 0.10);
+  }
   .shelter-card {
     background: var(--card);
     border-radius: var(--radius);
@@ -296,15 +324,40 @@
     padding: 22px 18px;
     text-align: center;
     transition: transform 0.2s;
+    position: relative;
   }
   .shelter-card:hover { transform: translateY(-4px); }
-  .shelter-emoji { font-size: 64px; display: block; }
+  .shelter-emoji { font-size: 64px; display: block; margin-top: 14px; }
   .shelter-card h3 { margin-top: 8px; font-size: 1.15rem; }
   .shelter-card p {
     color: var(--muted);
     font-size: 0.86rem;
     margin: 6px 0 14px;
     min-height: 40px;
+  }
+  .rarity {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    font-size: 0.68rem;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 999px;
+    color: #fff;
+  }
+  .rarity.common { background: #94a3b8; }
+  .rarity.rare   { background: linear-gradient(135deg, #818cf8, #6366f1); }
+  .rarity.epic   { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #713f12; }
+  .price-chip {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 0.78rem;
+    font-weight: 900;
+    background: #fef3c7;
+    color: #92400e;
+    padding: 4px 10px;
+    border-radius: 999px;
   }
   .adopt-btn {
     border: none;
@@ -318,6 +371,202 @@
     transition: transform 0.15s;
   }
   .adopt-btn:hover { transform: scale(1.06); }
+  .adopt-btn.locked { filter: grayscale(0.6) opacity(0.7); }
+
+  /* ---------- Spiele-Tab ---------- */
+  .game-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 26px 20px;
+    text-align: center;
+    transition: transform 0.2s;
+  }
+  .game-card:hover { transform: translateY(-4px); }
+  .game-ico { font-size: 58px; display: block; }
+  .game-card h3 { margin-top: 10px; font-size: 1.2rem; }
+  .game-card p { color: var(--muted); font-size: 0.88rem; margin: 8px 0 16px; min-height: 42px; }
+  .play-btn {
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(135deg, #a78bfa, #7c3aed);
+    color: #fff;
+    font-weight: 800;
+    font-size: 1rem;
+    padding: 12px 34px;
+    border-radius: 999px;
+    transition: transform 0.15s;
+  }
+  .play-btn:hover { transform: scale(1.07); }
+
+  /* ---------- Spiel-Overlay (3D) ---------- */
+  #gameOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: none;
+    background: linear-gradient(180deg, #7dd3fc 0%, #e0f2fe 55%, #86efac 55.2%, #4ade80 100%);
+    overflow: hidden;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  #gameOverlay.open { display: block; }
+
+  #gameHud {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    z-index: 20;
+    font-weight: 900;
+    font-size: 1.15rem;
+    color: #1e3a5f;
+  }
+  #gameHud .hud-chip {
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 999px;
+    padding: 8px 16px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+  }
+  #gQuit {
+    border: none;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 999px;
+    width: 42px;
+    height: 42px;
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: #b91c1c;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+  }
+
+  #gameStage {
+    position: absolute;
+    inset: 0;
+    perspective: 700px;
+    perspective-origin: 50% 42%;
+  }
+
+  /* 3D-Boden für das Fang-Spiel */
+  .floor3d {
+    position: absolute;
+    left: -60%;
+    bottom: -30%;
+    width: 220%;
+    height: 90%;
+    background:
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.35) 0 3px, transparent 3px 70px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.35) 0 3px, transparent 3px 70px),
+      linear-gradient(180deg, #86efac, #22c55e);
+    transform: rotateX(72deg);
+    transform-origin: 50% 0;
+  }
+
+  .treat3d {
+    position: absolute;
+    left: 50%;
+    top: 42%;
+    font-size: 64px;
+    cursor: pointer;
+    will-change: transform;
+    filter: drop-shadow(0 12px 8px rgba(0, 0, 0, 0.25));
+    z-index: 10;
+  }
+  .treat3d.pop { animation: treatPop 0.3s ease-out forwards; pointer-events: none; }
+  @keyframes treatPop {
+    0%   { opacity: 1; }
+    100% { opacity: 0; transform: scale(2.2) rotate(20deg); }
+  }
+
+  /* Memory-Spiel (3D-Kartenflip) */
+  .memory-wrap {
+    position: absolute;
+    inset: 70px 0 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    perspective: 900px;
+  }
+  .memory-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(64px, 110px));
+    gap: 12px;
+    padding: 12px;
+    transform: rotateX(8deg);
+    transform-style: preserve-3d;
+  }
+  @media (max-width: 500px) {
+    .memory-grid { grid-template-columns: repeat(3, minmax(70px, 100px)); }
+  }
+  .mcard {
+    aspect-ratio: 3 / 4;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    perspective: 600px;
+  }
+  .mcard-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.4, 1.4, 0.6, 1);
+  }
+  .mcard.flip .mcard-inner { transform: rotateY(180deg); }
+  .mcard.matched .mcard-inner { transform: rotateY(180deg) scale(1.06); }
+  .mface {
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(28px, 6vw, 44px);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+  }
+  .mface.front { background: linear-gradient(135deg, #818cf8, #6366f1); color: #fff; }
+  .mface.back  { background: #fff; transform: rotateY(180deg); }
+  .mcard.matched .mface.back { background: #dcfce7; box-shadow: 0 0 0 3px #4ade80 inset, 0 8px 18px rgba(0,0,0,0.18); }
+
+  /* Ergebnis-Anzeige */
+  #gameResult {
+    position: absolute;
+    inset: 0;
+    z-index: 30;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(30, 30, 50, 0.45);
+  }
+  #gameResult.open { display: flex; }
+  .result-card {
+    background: #fff;
+    border-radius: 24px;
+    padding: 34px 30px;
+    text-align: center;
+    max-width: 340px;
+    width: calc(100% - 40px);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+  }
+  .result-card .r-emoji { font-size: 64px; }
+  .result-card h2 { margin: 10px 0 6px; }
+  .result-card p { color: var(--muted); font-weight: 700; margin-bottom: 18px; }
+  .result-card button {
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(135deg, #4ade80, #16a34a);
+    color: #fff;
+    font-weight: 800;
+    font-size: 1rem;
+    padding: 13px 40px;
+    border-radius: 999px;
+  }
 
   /* ---------- Leerer Zustand ---------- */
   .empty {
@@ -361,6 +610,7 @@
   }
   .modal .m-emoji { font-size: 60px; }
   .modal h2 { margin: 8px 0 4px; font-size: 1.3rem; }
+  .modal .m-price { font-weight: 900; color: #92400e; margin-bottom: 6px; }
   .modal p { color: var(--muted); font-size: 0.9rem; margin-bottom: 14px; }
   .modal input {
     width: 100%;
@@ -408,7 +658,7 @@
     font-weight: 600;
     opacity: 0;
     transition: transform 0.35s ease, opacity 0.35s ease;
-    z-index: 60;
+    z-index: 120;
     max-width: 90vw;
     text-align: center;
   }
@@ -420,10 +670,13 @@
   @media (max-width: 420px) {
     .pet-emoji { font-size: 64px; }
     .act { font-size: 0.72rem; }
+    #coinChip { top: 8px; right: 8px; font-size: 0.9rem; }
   }
 </style>
 </head>
 <body>
+
+<div id="coinChip">🪙 <span id="coinVal">0</span></div>
 
 <header>
   <h1 id="appTitle">🐾 Haustier-Paradies</h1>
@@ -436,6 +689,7 @@
 <div class="tabs">
   <button class="tab-btn active" id="tabHome" onclick="showTab('home')"></button>
   <button class="tab-btn" id="tabShelter" onclick="showTab('shelter')"></button>
+  <button class="tab-btn" id="tabGames" onclick="showTab('games')"></button>
 </div>
 
 <main>
@@ -450,7 +704,12 @@
   </section>
 
   <section id="shelterSection" style="display:none;">
+    <div class="shelter-info" id="shelterInfo"></div>
     <div class="grid" id="shelterGrid"></div>
+  </section>
+
+  <section id="gamesSection" style="display:none;">
+    <div class="grid" id="gamesGrid"></div>
   </section>
 </main>
 
@@ -459,11 +718,30 @@
   <div class="modal">
     <div class="m-emoji" id="modalEmoji">🐕</div>
     <h2 id="modalTitle"></h2>
+    <div class="m-price" id="modalPrice"></div>
     <p id="modalQuestion"></p>
     <input type="text" id="nameInput" maxlength="16">
     <div class="m-actions">
       <button class="m-cancel" id="mCancel" onclick="closeModal()"></button>
       <button class="m-ok" id="mOk" onclick="confirmAdopt()"></button>
+    </div>
+  </div>
+</div>
+
+<!-- Spiel-Overlay -->
+<div id="gameOverlay">
+  <div id="gameHud">
+    <span class="hud-chip" id="gInfo1">⏱ 30</span>
+    <span class="hud-chip" id="gInfo2">🎯 0</span>
+    <button id="gQuit" onclick="quitGame()">✕</button>
+  </div>
+  <div id="gameStage"></div>
+  <div id="gameResult">
+    <div class="result-card">
+      <div class="r-emoji">🎉</div>
+      <h2 id="rTitle"></h2>
+      <p id="rText"></p>
+      <button id="rBtn" onclick="closeGame()"></button>
     </div>
   </div>
 </div>
@@ -491,7 +769,7 @@ const I18N = {
 de: {
   title: 'Haustier-Paradies',
   tagline: 'Füttere, spiele und kümmere dich um deine Tiere – sie zählen auf dich!',
-  tabHome: '🏠 Mein Zuhause ({n})', tabShelter: '🏕️ Tierheim',
+  tabHome: '🏠 Mein Zuhause ({n})', tabShelter: '🏕️ Tierheim', tabGames: '🎮 Spiele',
   emptyTitle: 'Noch ganz schön leer hier …', emptyText: 'Adoptiere dein erstes Haustier im Tierheim!', emptyBtn: '🏕️ Zum Tierheim',
   adoptTitle: '{species} adoptieren', adoptQuestion: 'Wie soll dein neues Haustier heissen?', namePlaceholder: 'Name eingeben …',
   cancel: 'Abbrechen', adoptBtn: 'Adoptieren 💚', level: 'Level',
@@ -505,6 +783,11 @@ de: {
   msgBathNo: 'Bäh, Wasser! 🙀', msgBathYes: 'Blitzeblank! ✨', msgNap: 'Pssst … Nickerchen-Zeit. 💤',
   msgWake: 'Gut geschlafen! ⚡', msgSlept: 'Ausgeschlafen und voller Energie! ⚡', msgLevel: 'Level {lvl} erreicht! 🎉', msgPet: '{name} freut sich über deine Streicheleinheit! ❤️',
   toastIn: '{emoji} {name} ist bei dir eingezogen!', toastBye: '{name} winkt dir zum Abschied. 👋', toastBack: 'Willkommen zurück! Deine Tiere haben dich vermisst. 🐾',
+  noCoins: 'Nicht genug Münzen! Verdiene mehr in den Mini-Spielen. 🎮', newPetsIn: '🚚 Neue Tiere in {time}', newPets: 'Neue Tiere sind im Tierheim angekommen! 🚚',
+  rarity: { common: 'Häufig', rare: 'Selten', epic: 'Episch' },
+  g1Name: 'Leckerli-Fangen 3D', g1Desc: 'Fange die fliegenden Leckerlis, bevor sie an dir vorbeisausen!',
+  g2Name: 'Tier-Memory 3D', g2Desc: 'Dreh die Karten und finde alle Tier-Paare!',
+  playBtn: 'Spielen', gameDone: 'Geschafft!', gameEarned: 'Du hast {coins} Münzen verdient! 🪙', gameClose: 'Weiter',
   species: {
     hund: { label: 'Hund', desc: 'Dein treuster Freund – will ganz viel spielen und kuscheln.' },
     katze: { label: 'Katze', desc: 'Elegant und verschmust, schläft gern – hasst aber Baden!' },
@@ -514,12 +797,24 @@ de: {
     papagei: { label: 'Papagei', desc: 'Bunt und gesprächig – langweilt sich schnell, will Action!' },
     schildkroete: { label: 'Schildkröte', desc: 'Gemütlich und super pflegeleicht. Perfekt für Einsteiger.' },
     fuchs: { label: 'Fuchs', desc: 'Schlau, verspielt und ein kleiner Schlingel im Fell.' },
+    schwein: { label: 'Schwein', desc: 'Grunzt vergnügt und liebt Matsch – wird schnell dreckig!' },
+    huhn: { label: 'Huhn', desc: 'Pickt und gackert den ganzen Tag. Legt vielleicht ein Ei!' },
+    maus: { label: 'Maus', desc: 'Winzig, flink und verrückt nach Käse.' },
+    frosch: { label: 'Frosch', desc: 'Quakt fröhlich und liebt Wasser über alles.' },
+    igel: { label: 'Igel', desc: 'Klein und stachelig – rollt sich gern zusammen.' },
+    pinguin: { label: 'Pinguin', desc: 'Watschelt elegant und liebt eiskalte Bäder.' },
+    koala: { label: 'Koala', desc: 'Schläft fast den ganzen Tag – zum Knuddeln süss.' },
+    eule: { label: 'Eule', desc: 'Weise Nachteule mit grossen Augen.' },
+    panda: { label: 'Panda', desc: 'Knuffiger Bambus-Fan – frisst den ganzen Tag.' },
+    loewe: { label: 'Löwe', desc: 'Der König der Tiere – majestätisch und immer hungrig.' },
+    einhorn: { label: 'Einhorn', desc: 'Magisch und glitzernd – bringt Regenbogen-Glück! ✨' },
+    drache: { label: 'Drache', desc: 'Ein echter Drache! Speit Feuer und hasst Badewasser.' },
   },
 },
 en: {
   title: 'Pet Paradise',
   tagline: "Feed, play and take care of your pets – they're counting on you!",
-  tabHome: '🏠 My Home ({n})', tabShelter: '🏕️ Shelter',
+  tabHome: '🏠 My Home ({n})', tabShelter: '🏕️ Shelter', tabGames: '🎮 Games',
   emptyTitle: 'Pretty empty in here …', emptyText: 'Adopt your first pet at the shelter!', emptyBtn: '🏕️ To the shelter',
   adoptTitle: 'Adopt a {species}', adoptQuestion: 'What should your new pet be called?', namePlaceholder: 'Enter a name …',
   cancel: 'Cancel', adoptBtn: 'Adopt 💚', level: 'Level',
@@ -533,6 +828,11 @@ en: {
   msgBathNo: 'Yuck, water! 🙀', msgBathYes: 'Squeaky clean! ✨', msgNap: 'Shhh … nap time. 💤',
   msgWake: 'That was a good sleep! ⚡', msgSlept: 'Well rested and full of energy! ⚡', msgLevel: 'Reached level {lvl}! 🎉', msgPet: '{name} loves your petting! ❤️',
   toastIn: '{emoji} {name} has moved in with you!', toastBye: '{name} waves goodbye. 👋', toastBack: 'Welcome back! Your pets missed you. 🐾',
+  noCoins: 'Not enough coins! Earn more in the mini games. 🎮', newPetsIn: '🚚 New pets in {time}', newPets: 'New pets have arrived at the shelter! 🚚',
+  rarity: { common: 'Common', rare: 'Rare', epic: 'Epic' },
+  g1Name: 'Treat Catch 3D', g1Desc: 'Catch the flying treats before they zoom right past you!',
+  g2Name: 'Pet Memory 3D', g2Desc: 'Flip the cards and find all the animal pairs!',
+  playBtn: 'Play', gameDone: 'Well done!', gameEarned: 'You earned {coins} coins! 🪙', gameClose: 'Continue',
   species: {
     hund: { label: 'Dog', desc: 'Your most loyal friend – loves playing and cuddling.' },
     katze: { label: 'Cat', desc: 'Elegant and cuddly, loves to sleep – but hates baths!' },
@@ -542,12 +842,24 @@ en: {
     papagei: { label: 'Parrot', desc: 'Colorful and chatty – gets bored fast, wants action!' },
     schildkroete: { label: 'Turtle', desc: 'Calm and super easy to care for. Perfect for beginners.' },
     fuchs: { label: 'Fox', desc: 'Clever, playful and a little rascal.' },
+    schwein: { label: 'Pig', desc: 'Grunts happily and loves mud – gets dirty fast!' },
+    huhn: { label: 'Chicken', desc: 'Pecks and clucks all day. Might lay an egg!' },
+    maus: { label: 'Mouse', desc: 'Tiny, quick and crazy about cheese.' },
+    frosch: { label: 'Frog', desc: 'Croaks happily and loves water more than anything.' },
+    igel: { label: 'Hedgehog', desc: 'Small and spiky – loves curling up.' },
+    pinguin: { label: 'Penguin', desc: 'Waddles elegantly and loves ice-cold baths.' },
+    koala: { label: 'Koala', desc: 'Sleeps almost all day – adorably cuddly.' },
+    eule: { label: 'Owl', desc: 'A wise night owl with big eyes.' },
+    panda: { label: 'Panda', desc: 'Cuddly bamboo fan – eats all day long.' },
+    loewe: { label: 'Lion', desc: 'The king of animals – majestic and always hungry.' },
+    einhorn: { label: 'Unicorn', desc: 'Magical and sparkly – brings rainbow luck! ✨' },
+    drache: { label: 'Dragon', desc: 'A real dragon! Breathes fire and hates bath water.' },
   },
 },
 ja: {
   title: 'ペットパラダイス',
   tagline: 'ごはんをあげて、遊んで、お世話をしよう – みんな待ってるよ！',
-  tabHome: '🏠 マイホーム ({n})', tabShelter: '🏕️ シェルター',
+  tabHome: '🏠 マイホーム ({n})', tabShelter: '🏕️ シェルター', tabGames: '🎮 ゲーム',
   emptyTitle: 'まだ誰もいないね …', emptyText: 'シェルターで最初のペットを迎えよう！', emptyBtn: '🏕️ シェルターへ',
   adoptTitle: '{species}を迎える', adoptQuestion: '名前を付けてあげよう！', namePlaceholder: '名前を入力 …',
   cancel: 'キャンセル', adoptBtn: 'お迎えする 💚', level: 'レベル',
@@ -561,6 +873,11 @@ ja: {
   msgBathNo: 'いやだ、水！🙀', msgBathYes: 'ピカピカ！✨', msgNap: 'しーっ … お昼寝タイム。💤',
   msgWake: 'よく寝た！⚡', msgSlept: 'ぐっすり眠って元気いっぱい！⚡', msgLevel: 'レベル{lvl}になった！🎉', msgPet: '{name}はなでなでが大好き！❤️',
   toastIn: '{emoji} {name}が家族になった！', toastBye: '{name}が手を振ってさよなら。👋', toastBack: 'おかえり！ペットたちが待ってたよ。🐾',
+  noCoins: 'コインが足りない！ミニゲームで稼ごう。🎮', newPetsIn: '🚚 新しい動物まで {time}', newPets: '新しい動物がシェルターに到着！🚚',
+  rarity: { common: 'ふつう', rare: 'レア', epic: 'エピック' },
+  g1Name: 'おやつキャッチ3D', g1Desc: '飛んでくるおやつを通り過ぎる前にキャッチしよう！',
+  g2Name: 'どうぶつメモリー3D', g2Desc: 'カードをめくって動物のペアを見つけよう！',
+  playBtn: 'あそぶ', gameDone: 'クリア！', gameEarned: '{coins}コインをゲット！🪙', gameClose: 'つづける',
   species: {
     hund: { label: '犬', desc: 'いちばんの親友。遊ぶことと甘えることが大好き。' },
     katze: { label: '猫', desc: '上品で甘えん坊。寝るのが大好き、でもお風呂は大嫌い！' },
@@ -570,12 +887,24 @@ ja: {
     papagei: { label: 'オウム', desc: 'カラフルでおしゃべり。すぐ退屈しちゃう！' },
     schildkroete: { label: 'カメ', desc: 'のんびり屋さんでお世話がとても簡単。初心者にぴったり。' },
     fuchs: { label: 'キツネ', desc: 'かしこくて遊び好きな、ちょっといたずらっ子。' },
+    schwein: { label: 'ブタ', desc: '楽しくブーブー、泥んこ大好き。すぐ汚れちゃう！' },
+    huhn: { label: 'ニワトリ', desc: '一日中コッコッとついばむよ。卵を産むかも！' },
+    maus: { label: 'ネズミ', desc: 'ちっちゃくてすばしっこい、チーズに夢中。' },
+    frosch: { label: 'カエル', desc: 'ケロケロ楽しく、水が大好き。' },
+    igel: { label: 'ハリネズミ', desc: '小さくてトゲトゲ、丸まるのが得意。' },
+    pinguin: { label: 'ペンギン', desc: 'よちよち歩きで、冷たいお風呂が大好き。' },
+    koala: { label: 'コアラ', desc: 'ほとんど一日中おねんね。抱きしめたくなる可愛さ。' },
+    eule: { label: 'フクロウ', desc: '大きな瞳の賢い夜ふかしさん。' },
+    panda: { label: 'パンダ', desc: '竹が大好きなもふもふさん。一日中もぐもぐ。' },
+    loewe: { label: 'ライオン', desc: '百獣の王。堂々としていて、いつもお腹ぺこぺこ。' },
+    einhorn: { label: 'ユニコーン', desc: '魔法できらきら、虹の幸運を運ぶよ！✨' },
+    drache: { label: 'ドラゴン', desc: '本物のドラゴン！火を吹いて、お風呂は大嫌い。' },
   },
 },
 zh: {
   title: '宠物乐园',
   tagline: '喂食、玩耍、照顾你的宠物——它们都靠你啦！',
-  tabHome: '🏠 我的家 ({n})', tabShelter: '🏕️ 收容所',
+  tabHome: '🏠 我的家 ({n})', tabShelter: '🏕️ 收容所', tabGames: '🎮 游戏',
   emptyTitle: '这里还空空的 ……', emptyText: '去收容所领养你的第一只宠物吧！', emptyBtn: '🏕️ 去收容所',
   adoptTitle: '领养{species}', adoptQuestion: '给你的新宠物取个名字吧！', namePlaceholder: '输入名字 ……',
   cancel: '取消', adoptBtn: '领养 💚', level: '等级',
@@ -589,6 +918,11 @@ zh: {
   msgBathNo: '呀，水！🙀', msgBathYes: '干干净净！✨', msgNap: '嘘 …… 午睡时间。💤',
   msgWake: '睡得真好！⚡', msgSlept: '睡饱了，充满活力！⚡', msgLevel: '升到{lvl}级啦！🎉', msgPet: '{name}喜欢你的抚摸！❤️',
   toastIn: '{emoji} {name}搬进你家啦！', toastBye: '{name}挥手告别。👋', toastBack: '欢迎回来！宠物们想你了。🐾',
+  noCoins: '金币不够！去小游戏里赚一些吧。🎮', newPetsIn: '🚚 {time} 后有新动物到达', newPets: '新动物到收容所啦！🚚',
+  rarity: { common: '普通', rare: '稀有', epic: '史诗' },
+  g1Name: '接零食3D', g1Desc: '接住飞来的零食，别让它们溜走！',
+  g2Name: '动物记忆3D', g2Desc: '翻开卡片，找出所有动物配对！',
+  playBtn: '开始', gameDone: '完成！', gameEarned: '你赚到了{coins}金币！🪙', gameClose: '继续',
   species: {
     hund: { label: '狗', desc: '你最忠实的朋友——最爱玩耍和撒娇。' },
     katze: { label: '猫', desc: '优雅又粘人，爱睡觉——但讨厌洗澡！' },
@@ -598,12 +932,24 @@ zh: {
     papagei: { label: '鹦鹉', desc: '色彩缤纷又健谈——很容易无聊，要多陪它玩！' },
     schildkroete: { label: '乌龟', desc: '悠闲又省心。最适合新手。' },
     fuchs: { label: '狐狸', desc: '聪明爱玩的小淘气。' },
+    schwein: { label: '猪', desc: '开心地哼哼，最爱泥巴——很快就脏兮兮！' },
+    huhn: { label: '鸡', desc: '整天啄啄叫叫，说不定还会下蛋！' },
+    maus: { label: '老鼠', desc: '小小的，跑得快，超爱奶酪。' },
+    frosch: { label: '青蛙', desc: '呱呱叫得欢，最爱玩水。' },
+    igel: { label: '刺猬', desc: '小小的刺球，最爱蜷成一团。' },
+    pinguin: { label: '企鹅', desc: '摇摇摆摆走路，喜欢冰凉的澡。' },
+    koala: { label: '考拉', desc: '几乎整天在睡觉——可爱得想抱抱。' },
+    eule: { label: '猫头鹰', desc: '大眼睛的聪明夜猫子。' },
+    panda: { label: '熊猫', desc: '毛茸茸的竹子迷——整天吃个不停。' },
+    loewe: { label: '狮子', desc: '百兽之王——威风凛凛，总是很饿。' },
+    einhorn: { label: '独角兽', desc: '充满魔法亮晶晶——带来彩虹好运！✨' },
+    drache: { label: '龙', desc: '真正的龙！会喷火，讨厌洗澡水。' },
   },
 },
 fr: {
   title: 'Paradis des Animaux',
   tagline: 'Nourris, joue et prends soin de tes animaux – ils comptent sur toi !',
-  tabHome: '🏠 Ma maison ({n})', tabShelter: '🏕️ Refuge',
+  tabHome: '🏠 Ma maison ({n})', tabShelter: '🏕️ Refuge', tabGames: '🎮 Jeux',
   emptyTitle: "C'est bien vide ici …", emptyText: 'Adopte ton premier animal au refuge !', emptyBtn: '🏕️ Vers le refuge',
   adoptTitle: 'Adopter : {species}', adoptQuestion: "Comment va s'appeler ton nouvel animal ?", namePlaceholder: 'Entre un nom …',
   cancel: 'Annuler', adoptBtn: 'Adopter 💚', level: 'Niveau',
@@ -617,6 +963,11 @@ fr: {
   msgBathNo: "Beurk, de l'eau ! 🙀", msgBathYes: 'Tout propre ! ✨', msgNap: "Chut … c'est l'heure de la sieste. 💤",
   msgWake: 'Bien dormi ! ⚡', msgSlept: "Bien reposé et plein d'énergie ! ⚡", msgLevel: 'Niveau {lvl} atteint ! 🎉', msgPet: '{name} adore tes caresses ! ❤️',
   toastIn: '{emoji} {name} a emménagé chez toi !', toastBye: '{name} te fait signe au revoir. 👋', toastBack: "Content de te revoir ! Tes animaux t'attendaient. 🐾",
+  noCoins: 'Pas assez de pièces ! Gagnes-en plus dans les mini-jeux. 🎮', newPetsIn: '🚚 Nouveaux animaux dans {time}', newPets: 'De nouveaux animaux sont arrivés au refuge ! 🚚',
+  rarity: { common: 'Commun', rare: 'Rare', epic: 'Épique' },
+  g1Name: 'Attrape-Friandises 3D', g1Desc: 'Attrape les friandises volantes avant qu’elles ne filent !',
+  g2Name: 'Mémo Animaux 3D', g2Desc: 'Retourne les cartes et trouve toutes les paires !',
+  playBtn: 'Jouer', gameDone: 'Bravo !', gameEarned: 'Tu as gagné {coins} pièces ! 🪙', gameClose: 'Continuer',
   species: {
     hund: { label: 'Chien', desc: 'Ton ami le plus fidèle – adore jouer et faire des câlins.' },
     katze: { label: 'Chat', desc: 'Élégant et câlin, adore dormir – mais déteste le bain !' },
@@ -626,12 +977,24 @@ fr: {
     papagei: { label: 'Perroquet', desc: "Coloré et bavard – s'ennuie vite, il veut de l'action !" },
     schildkroete: { label: 'Tortue', desc: 'Tranquille et très facile à vivre. Parfaite pour débuter.' },
     fuchs: { label: 'Renard', desc: 'Malin, joueur et un petit coquin.' },
+    schwein: { label: 'Cochon', desc: 'Grogne joyeusement et adore la boue – il se salit vite !' },
+    huhn: { label: 'Poule', desc: 'Picore et caquette toute la journée. Elle pondra peut-être un œuf !' },
+    maus: { label: 'Souris', desc: 'Minuscule, rapide et folle de fromage.' },
+    frosch: { label: 'Grenouille', desc: "Coasse gaiement et adore l'eau plus que tout." },
+    igel: { label: 'Hérisson', desc: 'Petit et piquant – adore se rouler en boule.' },
+    pinguin: { label: 'Pingouin', desc: 'Se dandine avec élégance et adore les bains glacés.' },
+    koala: { label: 'Koala', desc: 'Dort presque toute la journée – trop mignon à câliner.' },
+    eule: { label: 'Hibou', desc: 'Un sage oiseau de nuit aux grands yeux.' },
+    panda: { label: 'Panda', desc: 'Adorable fan de bambou – mange toute la journée.' },
+    loewe: { label: 'Lion', desc: 'Le roi des animaux – majestueux et toujours affamé.' },
+    einhorn: { label: 'Licorne', desc: 'Magique et scintillante – porte-bonheur arc-en-ciel ! ✨' },
+    drache: { label: 'Dragon', desc: "Un vrai dragon ! Crache du feu et déteste l'eau du bain." },
   },
 },
 it: {
   title: 'Paradiso degli Animali',
   tagline: 'Nutri, gioca e prenditi cura dei tuoi animali – contano su di te!',
-  tabHome: '🏠 Casa mia ({n})', tabShelter: '🏕️ Rifugio',
+  tabHome: '🏠 Casa mia ({n})', tabShelter: '🏕️ Rifugio', tabGames: '🎮 Giochi',
   emptyTitle: 'Che vuoto qui …', emptyText: 'Adotta il tuo primo animale al rifugio!', emptyBtn: '🏕️ Al rifugio',
   adoptTitle: 'Adotta: {species}', adoptQuestion: 'Come si chiamerà il tuo nuovo animale?', namePlaceholder: 'Scrivi un nome …',
   cancel: 'Annulla', adoptBtn: 'Adotta 💚', level: 'Livello',
@@ -645,6 +1008,11 @@ it: {
   msgBathNo: 'Bleah, acqua! 🙀', msgBathYes: 'Pulito e splendente! ✨', msgNap: 'Shhh … è ora del pisolino. 💤',
   msgWake: 'Che bella dormita! ⚡', msgSlept: 'Riposato e pieno di energia! ⚡', msgLevel: 'Livello {lvl} raggiunto! 🎉', msgPet: '{name} adora le tue coccole! ❤️',
   toastIn: '{emoji} {name} è venuto a vivere con te!', toastBye: '{name} ti saluta con la zampa. 👋', toastBack: 'Bentornato! I tuoi animali ti aspettavano. 🐾',
+  noCoins: 'Monete insufficienti! Guadagnane di più nei minigiochi. 🎮', newPetsIn: '🚚 Nuovi animali tra {time}', newPets: 'Nuovi animali sono arrivati al rifugio! 🚚',
+  rarity: { common: 'Comune', rare: 'Raro', epic: 'Epico' },
+  g1Name: 'Acchiappa-Snack 3D', g1Desc: 'Acchiappa gli snack volanti prima che sfreccino via!',
+  g2Name: 'Memory Animali 3D', g2Desc: 'Gira le carte e trova tutte le coppie!',
+  playBtn: 'Gioca', gameDone: 'Ce l’hai fatta!', gameEarned: 'Hai guadagnato {coins} monete! 🪙', gameClose: 'Continua',
   species: {
     hund: { label: 'Cane', desc: 'Il tuo amico più fedele – adora giocare e le coccole.' },
     katze: { label: 'Gatto', desc: 'Elegante e coccolone, ama dormire – ma odia il bagno!' },
@@ -654,12 +1022,24 @@ it: {
     papagei: { label: 'Pappagallo', desc: 'Colorato e chiacchierone – si annoia in fretta, vuole azione!' },
     schildkroete: { label: 'Tartaruga', desc: 'Tranquilla e facilissima da accudire. Perfetta per iniziare.' },
     fuchs: { label: 'Volpe', desc: "Furba, giocherellona e un po' birichina." },
+    schwein: { label: 'Maiale', desc: 'Grugnisce felice e adora il fango – si sporca subito!' },
+    huhn: { label: 'Gallina', desc: 'Becca e chioccia tutto il giorno. Magari fa un uovo!' },
+    maus: { label: 'Topo', desc: 'Piccolo, veloce e pazzo per il formaggio.' },
+    frosch: { label: 'Rana', desc: "Gracida allegra e ama l'acqua più di ogni cosa." },
+    igel: { label: 'Riccio', desc: 'Piccolo e pungente – adora appallottolarsi.' },
+    pinguin: { label: 'Pinguino', desc: 'Cammina dondolando e ama i bagni gelati.' },
+    koala: { label: 'Koala', desc: 'Dorme quasi tutto il giorno – tenerissimo da coccolare.' },
+    eule: { label: 'Gufo', desc: 'Un saggio uccello notturno dagli occhi grandi.' },
+    panda: { label: 'Panda', desc: 'Morbidoso fan del bambù – mangia tutto il giorno.' },
+    loewe: { label: 'Leone', desc: 'Il re degli animali – maestoso e sempre affamato.' },
+    einhorn: { label: 'Unicorno', desc: 'Magico e scintillante – porta fortuna arcobaleno! ✨' },
+    drache: { label: 'Drago', desc: "Un vero drago! Sputa fuoco e odia l'acqua del bagno." },
   },
 },
 es: {
   title: 'Paraíso de Mascotas',
   tagline: 'Alimenta, juega y cuida a tus mascotas: ¡cuentan contigo!',
-  tabHome: '🏠 Mi casa ({n})', tabShelter: '🏕️ Refugio',
+  tabHome: '🏠 Mi casa ({n})', tabShelter: '🏕️ Refugio', tabGames: '🎮 Juegos',
   emptyTitle: 'Qué vacío está esto …', emptyText: '¡Adopta tu primera mascota en el refugio!', emptyBtn: '🏕️ Al refugio',
   adoptTitle: 'Adoptar: {species}', adoptQuestion: '¿Cómo se llamará tu nueva mascota?', namePlaceholder: 'Escribe un nombre …',
   cancel: 'Cancelar', adoptBtn: 'Adoptar 💚', level: 'Nivel',
@@ -673,6 +1053,11 @@ es: {
   msgBathNo: '¡Puaj, agua! 🙀', msgBathYes: '¡Reluciente! ✨', msgNap: 'Shhh … hora de la siesta. 💤',
   msgWake: '¡Qué bien he dormido! ⚡', msgSlept: '¡Descansado y lleno de energía! ⚡', msgLevel: '¡Nivel {lvl} alcanzado! 🎉', msgPet: '¡A {name} le encantan tus mimos! ❤️',
   toastIn: '¡{emoji} {name} se ha mudado contigo!', toastBye: '{name} se despide con la patita. 👋', toastBack: '¡Bienvenido de vuelta! Tus mascotas te echaban de menos. 🐾',
+  noCoins: '¡No tienes suficientes monedas! Gana más en los minijuegos. 🎮', newPetsIn: '🚚 Nuevos animales en {time}', newPets: '¡Han llegado nuevos animales al refugio! 🚚',
+  rarity: { common: 'Común', rare: 'Raro', epic: 'Épico' },
+  g1Name: 'Atrapa-Premios 3D', g1Desc: '¡Atrapa las golosinas voladoras antes de que pasen de largo!',
+  g2Name: 'Memoria Animal 3D', g2Desc: '¡Gira las cartas y encuentra todas las parejas!',
+  playBtn: 'Jugar', gameDone: '¡Muy bien!', gameEarned: '¡Has ganado {coins} monedas! 🪙', gameClose: 'Seguir',
   species: {
     hund: { label: 'Perro', desc: 'Tu amigo más fiel: le encanta jugar y los mimos.' },
     katze: { label: 'Gato', desc: 'Elegante y mimoso, adora dormir… ¡pero odia bañarse!' },
@@ -682,12 +1067,24 @@ es: {
     papagei: { label: 'Loro', desc: 'Colorido y parlanchín: se aburre rápido, ¡quiere acción!' },
     schildkroete: { label: 'Tortuga', desc: 'Tranquila y facilísima de cuidar. Perfecta para empezar.' },
     fuchs: { label: 'Zorro', desc: 'Listo, juguetón y un poco pillo.' },
+    schwein: { label: 'Cerdo', desc: 'Gruñe feliz y adora el barro: ¡se ensucia rapidísimo!' },
+    huhn: { label: 'Gallina', desc: 'Picotea y cacarea todo el día. ¡Quizá ponga un huevo!' },
+    maus: { label: 'Ratón', desc: 'Diminuto, veloz y loco por el queso.' },
+    frosch: { label: 'Rana', desc: 'Croa alegre y ama el agua más que nada.' },
+    igel: { label: 'Erizo', desc: 'Pequeño y pinchudo: le encanta hacerse una bolita.' },
+    pinguin: { label: 'Pingüino', desc: 'Camina bamboleándose y adora los baños helados.' },
+    koala: { label: 'Koala', desc: 'Duerme casi todo el día: adorable para abrazar.' },
+    eule: { label: 'Búho', desc: 'Una sabia ave nocturna de ojos grandes.' },
+    panda: { label: 'Panda', desc: 'Peludo fan del bambú: come todo el día.' },
+    loewe: { label: 'León', desc: 'El rey de los animales: majestuoso y siempre hambriento.' },
+    einhorn: { label: 'Unicornio', desc: '¡Mágico y brillante, trae suerte de arcoíris! ✨' },
+    drache: { label: 'Dragón', desc: '¡Un dragón de verdad! Escupe fuego y odia el agua del baño.' },
   },
 },
 fi: {
   title: 'Lemmikkiparatiisi',
   tagline: 'Ruoki, leiki ja pidä huolta lemmikeistäsi – ne luottavat sinuun!',
-  tabHome: '🏠 Kotini ({n})', tabShelter: '🏕️ Eläinkoti',
+  tabHome: '🏠 Kotini ({n})', tabShelter: '🏕️ Eläinkoti', tabGames: '🎮 Pelit',
   emptyTitle: 'Aika tyhjää täällä …', emptyText: 'Adoptoi ensimmäinen lemmikkisi eläinkodista!', emptyBtn: '🏕️ Eläinkotiin',
   adoptTitle: 'Adoptoi: {species}', adoptQuestion: 'Minkä nimen annat uudelle lemmikillesi?', namePlaceholder: 'Kirjoita nimi …',
   cancel: 'Peruuta', adoptBtn: 'Adoptoi 💚', level: 'Taso',
@@ -701,6 +1098,11 @@ fi: {
   msgBathNo: 'Yök, vettä! 🙀', msgBathYes: 'Putipuhdas! ✨', msgNap: 'Shh … päiväunien aika. 💤',
   msgWake: 'Hyvin nukuttu! ⚡', msgSlept: 'Levännyt ja täynnä energiaa! ⚡', msgLevel: 'Taso {lvl} saavutettu! 🎉', msgPet: '{name} rakastaa silityksiäsi! ❤️',
   toastIn: '{emoji} {name} muutti luoksesi!', toastBye: '{name} vilkuttaa hyvästiksi. 👋', toastBack: 'Tervetuloa takaisin! Lemmikkisi kaipasivat sinua. 🐾',
+  noCoins: 'Kolikot eivät riitä! Ansaitse lisää minipeleissä. 🎮', newPetsIn: '🚚 Uusia eläimiä {time} päästä', newPets: 'Uusia eläimiä saapui eläinkotiin! 🚚',
+  rarity: { common: 'Tavallinen', rare: 'Harvinainen', epic: 'Eeppinen' },
+  g1Name: 'Herkkujahti 3D', g1Desc: 'Nappaa lentävät herkut ennen kuin ne viuhahtavat ohi!',
+  g2Name: 'Eläinmuistipeli 3D', g2Desc: 'Käännä kortit ja löydä kaikki eläinparit!',
+  playBtn: 'Pelaa', gameDone: 'Hienoa!', gameEarned: 'Ansaitsit {coins} kolikkoa! 🪙', gameClose: 'Jatka',
   species: {
     hund: { label: 'Koira', desc: 'Uskollisin ystäväsi – rakastaa leikkimistä ja rapsutuksia.' },
     katze: { label: 'Kissa', desc: 'Tyylikäs ja lempeä, nukkuu mielellään – mutta vihaa kylpyjä!' },
@@ -710,12 +1112,24 @@ fi: {
     papagei: { label: 'Papukaija', desc: 'Värikäs ja puhelias – tylsistyy nopeasti, haluaa toimintaa!' },
     schildkroete: { label: 'Kilpikonna', desc: 'Rauhallinen ja tosi helppohoitoinen. Täydellinen aloittelijalle.' },
     fuchs: { label: 'Kettu', desc: 'Fiksu, leikkisä ja pieni veijari.' },
+    schwein: { label: 'Sika', desc: 'Röhkii iloisesti ja rakastaa mutaa – likaantuu nopeasti!' },
+    huhn: { label: 'Kana', desc: 'Nokkii ja kotkottaa koko päivän. Ehkä se munii!' },
+    maus: { label: 'Hiiri', desc: 'Pikkuruinen, nopea ja hulluna juustoon.' },
+    frosch: { label: 'Sammakko', desc: 'Kurnuttaa iloisesti ja rakastaa vettä yli kaiken.' },
+    igel: { label: 'Siili', desc: 'Pieni ja piikikäs – tykkää käpertyä palloksi.' },
+    pinguin: { label: 'Pingviini', desc: 'Vaappuu tyylikkäästi ja rakastaa jääkylmiä kylpyjä.' },
+    koala: { label: 'Koala', desc: 'Nukkuu melkein koko päivän – suloinen halattava.' },
+    eule: { label: 'Pöllö', desc: 'Viisas yökyöpeli, jolla on suuret silmät.' },
+    panda: { label: 'Panda', desc: 'Pehmoinen bambufani – syö koko päivän.' },
+    loewe: { label: 'Leijona', desc: 'Eläinten kuningas – mahtava ja aina nälkäinen.' },
+    einhorn: { label: 'Yksisarvinen', desc: 'Taianomainen ja kimalteleva – tuo sateenkaarionnea! ✨' },
+    drache: { label: 'Lohikäärme', desc: 'Oikea lohikäärme! Syöksee tulta ja vihaa kylpyvettä.' },
   },
 },
 no: {
   title: 'Kjæledyrparadis',
   tagline: 'Mat, lek og ta vare på dyrene dine – de stoler på deg!',
-  tabHome: '🏠 Hjemme ({n})', tabShelter: '🏕️ Dyrehjem',
+  tabHome: '🏠 Hjemme ({n})', tabShelter: '🏕️ Dyrehjem', tabGames: '🎮 Spill',
   emptyTitle: 'Ganske tomt her …', emptyText: 'Adopter ditt første kjæledyr på dyrehjemmet!', emptyBtn: '🏕️ Til dyrehjemmet',
   adoptTitle: 'Adopter: {species}', adoptQuestion: 'Hva skal det nye kjæledyret ditt hete?', namePlaceholder: 'Skriv et navn …',
   cancel: 'Avbryt', adoptBtn: 'Adopter 💚', level: 'Nivå',
@@ -729,6 +1143,11 @@ no: {
   msgBathNo: 'Æsj, vann! 🙀', msgBathYes: 'Skinnende ren! ✨', msgNap: 'Hysj … tid for en lur. 💤',
   msgWake: 'Godt sovet! ⚡', msgSlept: 'Uthvilt og full av energi! ⚡', msgLevel: 'Nådde nivå {lvl}! 🎉', msgPet: '{name} elsker kosen din! ❤️',
   toastIn: '{emoji} {name} har flyttet inn hos deg!', toastBye: '{name} vinker farvel. 👋', toastBack: 'Velkommen tilbake! Dyrene dine har savnet deg. 🐾',
+  noCoins: 'Ikke nok mynter! Tjen flere i minispillene. 🎮', newPetsIn: '🚚 Nye dyr om {time}', newPets: 'Nye dyr har kommet til dyrehjemmet! 🚚',
+  rarity: { common: 'Vanlig', rare: 'Sjelden', epic: 'Episk' },
+  g1Name: 'Godbit-fangst 3D', g1Desc: 'Fang de flyvende godbitene før de suser forbi!',
+  g2Name: 'Dyrememory 3D', g2Desc: 'Snu kortene og finn alle dyreparene!',
+  playBtn: 'Spill', gameDone: 'Bra jobbet!', gameEarned: 'Du tjente {coins} mynter! 🪙', gameClose: 'Fortsett',
   species: {
     hund: { label: 'Hund', desc: 'Din mest trofaste venn – elsker å leke og kose.' },
     katze: { label: 'Katt', desc: 'Elegant og kosete, elsker å sove – men hater bad!' },
@@ -738,12 +1157,24 @@ no: {
     papagei: { label: 'Papegøye', desc: 'Fargerik og pratsom – kjeder seg fort, vil ha action!' },
     schildkroete: { label: 'Skilpadde', desc: 'Rolig og superenkel å stelle. Perfekt for nybegynnere.' },
     fuchs: { label: 'Rev', desc: 'Lur, leken og en liten rampunge.' },
+    schwein: { label: 'Gris', desc: 'Grynter fornøyd og elsker søle – blir fort skitten!' },
+    huhn: { label: 'Høne', desc: 'Hakker og klukker hele dagen. Kanskje den legger et egg!' },
+    maus: { label: 'Mus', desc: 'Bitteliten, rask og helt gal etter ost.' },
+    frosch: { label: 'Frosk', desc: 'Kvekker glad og elsker vann over alt annet.' },
+    igel: { label: 'Pinnsvin', desc: 'Liten og piggete – elsker å rulle seg sammen.' },
+    pinguin: { label: 'Pingvin', desc: 'Vagger elegant og elsker iskalde bad.' },
+    koala: { label: 'Koala', desc: 'Sover nesten hele dagen – herlig å kose med.' },
+    eule: { label: 'Ugle', desc: 'En klok nattugle med store øyne.' },
+    panda: { label: 'Panda', desc: 'Kosete bambusfan – spiser hele dagen.' },
+    loewe: { label: 'Løve', desc: 'Dyrenes konge – majestetisk og alltid sulten.' },
+    einhorn: { label: 'Enhjørning', desc: 'Magisk og glitrende – gir regnbueflaks! ✨' },
+    drache: { label: 'Drage', desc: 'En ekte drage! Spruter ild og hater badevann.' },
   },
 },
 sv: {
   title: 'Husdjursparadiset',
   tagline: 'Mata, lek och ta hand om dina husdjur – de räknar med dig!',
-  tabHome: '🏠 Mitt hem ({n})', tabShelter: '🏕️ Djurhem',
+  tabHome: '🏠 Mitt hem ({n})', tabShelter: '🏕️ Djurhem', tabGames: '🎮 Spel',
   emptyTitle: 'Ganska tomt här …', emptyText: 'Adoptera ditt första husdjur på djurhemmet!', emptyBtn: '🏕️ Till djurhemmet',
   adoptTitle: 'Adoptera: {species}', adoptQuestion: 'Vad ska ditt nya husdjur heta?', namePlaceholder: 'Skriv ett namn …',
   cancel: 'Avbryt', adoptBtn: 'Adoptera 💚', level: 'Nivå',
@@ -757,6 +1188,11 @@ sv: {
   msgBathNo: 'Usch, vatten! 🙀', msgBathYes: 'Skinande ren! ✨', msgNap: 'Sch … dags för en tupplur. 💤',
   msgWake: 'Gott sovet! ⚡', msgSlept: 'Utvilad och full av energi! ⚡', msgLevel: 'Nådde nivå {lvl}! 🎉', msgPet: '{name} älskar dina klappar! ❤️',
   toastIn: '{emoji} {name} har flyttat in hos dig!', toastBye: '{name} vinkar hejdå. 👋', toastBack: 'Välkommen tillbaka! Dina husdjur har saknat dig. 🐾',
+  noCoins: 'Inte tillräckligt med mynt! Tjäna fler i minispelen. 🎮', newPetsIn: '🚚 Nya djur om {time}', newPets: 'Nya djur har kommit till djurhemmet! 🚚',
+  rarity: { common: 'Vanlig', rare: 'Sällsynt', epic: 'Episk' },
+  g1Name: 'Godisfångst 3D', g1Desc: 'Fånga de flygande godbitarna innan de susar förbi!',
+  g2Name: 'Djurmemory 3D', g2Desc: 'Vänd korten och hitta alla djurpar!',
+  playBtn: 'Spela', gameDone: 'Bra jobbat!', gameEarned: 'Du tjänade {coins} mynt! 🪙', gameClose: 'Fortsätt',
   species: {
     hund: { label: 'Hund', desc: 'Din mest trogna vän – älskar att leka och gosa.' },
     katze: { label: 'Katt', desc: 'Elegant och gosig, älskar att sova – men hatar bad!' },
@@ -766,6 +1202,18 @@ sv: {
     papagei: { label: 'Papegoja', desc: 'Färgglad och pratsam – blir uttråkad snabbt, vill ha action!' },
     schildkroete: { label: 'Sköldpadda', desc: 'Lugn och superlätt att sköta. Perfekt för nybörjare.' },
     fuchs: { label: 'Räv', desc: 'Smart, lekfull och en liten rackare.' },
+    schwein: { label: 'Gris', desc: 'Grymtar glatt och älskar lera – blir smutsig snabbt!' },
+    huhn: { label: 'Höna', desc: 'Pickar och kacklar hela dagen. Kanske värper hon ett ägg!' },
+    maus: { label: 'Mus', desc: 'Pytteliten, snabb och tokig i ost.' },
+    frosch: { label: 'Groda', desc: 'Kväker glatt och älskar vatten över allt annat.' },
+    igel: { label: 'Igelkott', desc: 'Liten och taggig – älskar att rulla ihop sig.' },
+    pinguin: { label: 'Pingvin', desc: 'Vaggar elegant och älskar iskalla bad.' },
+    koala: { label: 'Koala', desc: 'Sover nästan hela dagen – underbar att krama.' },
+    eule: { label: 'Uggla', desc: 'En klok nattuggla med stora ögon.' },
+    panda: { label: 'Panda', desc: 'Gosig bambufantast – äter hela dagen.' },
+    loewe: { label: 'Lejon', desc: 'Djurens konung – majestätisk och alltid hungrig.' },
+    einhorn: { label: 'Enhörning', desc: 'Magisk och glittrig – ger regnbågstur! ✨' },
+    drache: { label: 'Drake', desc: 'En riktig drake! Sprutar eld och hatar badvatten.' },
   },
 },
 };
@@ -797,6 +1245,7 @@ function applyLang() {
   document.getElementById('appTitle').textContent = '🐾 ' + t.title;
   document.getElementById('appTagline').textContent = t.tagline;
   document.getElementById('tabShelter').textContent = t.tabShelter;
+  document.getElementById('tabGames').textContent = t.tabGames;
   document.getElementById('emptyTitle').textContent = t.emptyTitle;
   document.getElementById('emptyText').textContent = t.emptyText;
   document.getElementById('emptyBtn').textContent = t.emptyBtn;
@@ -806,19 +1255,32 @@ function applyLang() {
   document.getElementById('mOk').textContent = t.adoptBtn;
   document.getElementById('langSelect').value = lang;
   renderShelter();
+  renderGames();
   renderHome();
 }
 
-/* ================= Tierarten ================= */
+/* ================= Tierarten (20) ================= */
 const SPECIES = [
-  { key: 'hund',        emoji: '🐕', food: '🦴', names: ['Bello', 'Rex', 'Luna', 'Rocky'],        rates: { hunger: 1.1, fun: 1.3, energy: 1.0, clean: 1.1 }, bath: 0 },
-  { key: 'katze',       emoji: '🐈', food: '🐟', names: ['Minka', 'Felix', 'Mia', 'Simba'],       rates: { hunger: 1.0, fun: 0.9, energy: 1.2, clean: 0.7 }, bath: -15 },
-  { key: 'tiger',       emoji: '🐅', food: '🥩', names: ['Raja', 'Kira', 'Diego', 'Shira'],       rates: { hunger: 1.6, fun: 1.1, energy: 1.0, clean: 0.8 }, bath: -10 },
-  { key: 'kaninchen',   emoji: '🐇', food: '🥕', names: ['Hoppel', 'Schnuffel', 'Momo', 'Flecki'], rates: { hunger: 1.3, fun: 1.0, energy: 0.9, clean: 1.0 }, bath: 0 },
-  { key: 'hamster',     emoji: '🐹', food: '🌻', names: ['Krümel', 'Nugget', 'Peanut', 'Speedy'], rates: { hunger: 1.2, fun: 1.0, energy: 1.3, clean: 0.9 }, bath: 0 },
-  { key: 'papagei',     emoji: '🦜', food: '🍎', names: ['Coco', 'Rio', 'Kiwi', 'Polly'],         rates: { hunger: 1.0, fun: 1.4, energy: 1.0, clean: 0.8 }, bath: 5 },
-  { key: 'schildkroete', emoji: '🐢', food: '🥬', names: ['Berta', 'Kai', 'Tuki', 'Emma'],        rates: { hunger: 0.6, fun: 0.6, energy: 0.7, clean: 0.6 }, bath: 5 },
-  { key: 'fuchs',       emoji: '🦊', food: '🍗', names: ['Foxi', 'Rusty', 'Finn', 'Amber'],       rates: { hunger: 1.2, fun: 1.2, energy: 1.0, clean: 1.2 }, bath: -5 },
+  { key: 'hund',         emoji: '🐕', food: '🦴', price: 60,  rarity: 'common', names: ['Bello', 'Rex', 'Luna', 'Rocky'],         rates: { hunger: 1.1, fun: 1.3, energy: 1.0, clean: 1.1 }, bath: 0 },
+  { key: 'katze',        emoji: '🐈', food: '🐟', price: 60,  rarity: 'common', names: ['Minka', 'Felix', 'Mia', 'Simba'],        rates: { hunger: 1.0, fun: 0.9, energy: 1.2, clean: 0.7 }, bath: -15 },
+  { key: 'kaninchen',    emoji: '🐇', food: '🥕', price: 50,  rarity: 'common', names: ['Hoppel', 'Schnuffel', 'Momo', 'Flecki'], rates: { hunger: 1.3, fun: 1.0, energy: 0.9, clean: 1.0 }, bath: 0 },
+  { key: 'hamster',      emoji: '🐹', food: '🌻', price: 40,  rarity: 'common', names: ['Krümel', 'Nugget', 'Peanut', 'Speedy'],  rates: { hunger: 1.2, fun: 1.0, energy: 1.3, clean: 0.9 }, bath: 0 },
+  { key: 'papagei',      emoji: '🦜', food: '🍎', price: 80,  rarity: 'common', names: ['Coco', 'Rio', 'Kiwi', 'Polly'],          rates: { hunger: 1.0, fun: 1.4, energy: 1.0, clean: 0.8 }, bath: 5 },
+  { key: 'schildkroete', emoji: '🐢', food: '🥬', price: 50,  rarity: 'common', names: ['Berta', 'Kai', 'Tuki', 'Emma'],          rates: { hunger: 0.6, fun: 0.6, energy: 0.7, clean: 0.6 }, bath: 5 },
+  { key: 'schwein',      emoji: '🐷', food: '🌽', price: 45,  rarity: 'common', names: ['Rosa', 'Oink', 'Babe', 'Porky'],         rates: { hunger: 1.3, fun: 1.0, energy: 0.9, clean: 1.4 }, bath: 5 },
+  { key: 'huhn',         emoji: '🐔', food: '🌾', price: 40,  rarity: 'common', names: ['Kiki', 'Hilda', 'Piep', 'Goldi'],        rates: { hunger: 1.1, fun: 0.9, energy: 1.0, clean: 0.9 }, bath: 0 },
+  { key: 'maus',         emoji: '🐭', food: '🧀', price: 35,  rarity: 'common', names: ['Mimi', 'Pieps', 'Jerry', 'Nibbles'],     rates: { hunger: 1.2, fun: 1.0, energy: 1.1, clean: 0.8 }, bath: 0 },
+  { key: 'frosch',       emoji: '🐸', food: '🪰', price: 45,  rarity: 'common', names: ['Quaki', 'Kermit', 'Hops', 'Lily'],       rates: { hunger: 0.9, fun: 1.0, energy: 0.8, clean: 0.6 }, bath: 10 },
+  { key: 'igel',         emoji: '🦔', food: '🍄', price: 70,  rarity: 'common', names: ['Stachel', 'Piksi', 'Rolli', 'Nala'],     rates: { hunger: 1.0, fun: 0.8, energy: 1.1, clean: 0.9 }, bath: -5 },
+  { key: 'eule',         emoji: '🦉', food: '🍇', price: 140, rarity: 'rare',   names: ['Hedwig', 'Uhu', 'Selma', 'Hooty'],       rates: { hunger: 0.9, fun: 1.0, energy: 1.2, clean: 0.7 }, bath: 0 },
+  { key: 'fuchs',        emoji: '🦊', food: '🍗', price: 150, rarity: 'rare',   names: ['Foxi', 'Rusty', 'Finn', 'Amber'],        rates: { hunger: 1.2, fun: 1.2, energy: 1.0, clean: 1.2 }, bath: -5 },
+  { key: 'pinguin',      emoji: '🐧', food: '🐟', price: 160, rarity: 'rare',   names: ['Pingu', 'Waddle', 'Eisi', 'Pablo'],      rates: { hunger: 1.2, fun: 1.1, energy: 1.0, clean: 0.7 }, bath: 10 },
+  { key: 'koala',        emoji: '🐨', food: '🌿', price: 180, rarity: 'rare',   names: ['Koko', 'Sydney', 'Momo', 'Euki'],        rates: { hunger: 0.8, fun: 0.7, energy: 1.4, clean: 0.7 }, bath: -5 },
+  { key: 'panda',        emoji: '🐼', food: '🎋', price: 220, rarity: 'rare',   names: ['Bambu', 'Po', 'Mei', 'Yuki'],            rates: { hunger: 1.4, fun: 0.9, energy: 1.2, clean: 0.8 }, bath: 0 },
+  { key: 'tiger',        emoji: '🐅', food: '🥩', price: 250, rarity: 'rare',   names: ['Raja', 'Kira', 'Diego', 'Shira'],        rates: { hunger: 1.6, fun: 1.1, energy: 1.0, clean: 0.8 }, bath: -10 },
+  { key: 'loewe',        emoji: '🦁', food: '🥩', price: 260, rarity: 'rare',   names: ['Leo', 'Nala', 'Mufasa', 'Kimba'],        rates: { hunger: 1.5, fun: 1.0, energy: 1.1, clean: 0.8 }, bath: -10 },
+  { key: 'einhorn',      emoji: '🦄', food: '🌈', price: 450, rarity: 'epic',   names: ['Sternchen', 'Rainbow', 'Magic', 'Glitzer'], rates: { hunger: 0.9, fun: 1.2, energy: 0.9, clean: 0.5 }, bath: 10 },
+  { key: 'drache',       emoji: '🐉', food: '🔥', price: 500, rarity: 'epic',   names: ['Fuego', 'Smoky', 'Draco', 'Ember'],      rates: { hunger: 1.4, fun: 1.2, energy: 1.0, clean: 0.7 }, bath: -15 },
 ];
 
 /* Basis-Abnahme pro Minute (wird mit Arten-Faktor multipliziert) */
@@ -831,9 +1293,12 @@ const STATS = [
 ];
 const MAX_CATCHUP_MIN = 120;   // Offline-Zeit wird auf 2 h begrenzt
 const SLEEP_SECONDS = 20;
+const START_COINS = 100;
+const SHELTER_WINDOW_MS = 10 * 60 * 1000;  // alle 10 Minuten neue Tiere
+const SHELTER_SIZE = 6;
 
 /* ================= Spielstand ================= */
-let state = { pets: [], nextId: 1, lastSeen: Date.now() };
+let state = { pets: [], nextId: 1, coins: START_COINS, lastSeen: Date.now() };
 
 function save() {
   state.lastSeen = Date.now();
@@ -843,11 +1308,13 @@ function save() {
 function load() {
   let raw = null;
   try { raw = localStorage.getItem('haustierParadies'); } catch (e) { /* privater Modus */ }
-  if (!raw) return;
-  try {
-    const data = JSON.parse(raw);
-    if (data && Array.isArray(data.pets)) state = data;
-  } catch (e) { /* kaputter Spielstand -> neu anfangen */ }
+  if (raw) {
+    try {
+      const data = JSON.parse(raw);
+      if (data && Array.isArray(data.pets)) state = data;
+    } catch (e) { /* kaputter Spielstand -> neu anfangen */ }
+  }
+  if (typeof state.coins !== 'number') state.coins = START_COINS; // Migration älterer Spielstände
 
   // Offline-Aufholung: Werte sinken auch, während die Seite zu war
   const elapsedMin = Math.min(MAX_CATCHUP_MIN, (Date.now() - (state.lastSeen || Date.now())) / 60000);
@@ -860,9 +1327,25 @@ function load() {
   state.pets.forEach(p => { p.sleepUntil = 0; }); // nach Neuladen ist niemand mehr im Nickerchen
 }
 
+/* ================= Münzen ================= */
+function addCoins(n) {
+  state.coins = Math.max(0, state.coins + n);
+  save();
+  updateCoinChip(true);
+}
+function updateCoinChip(bump) {
+  document.getElementById('coinVal').textContent = Math.floor(state.coins);
+  if (bump) {
+    const chip = document.getElementById('coinChip');
+    chip.classList.remove('bump');
+    void chip.offsetWidth;
+    chip.classList.add('bump');
+    setTimeout(() => chip.classList.remove('bump'), 250);
+  }
+}
+
 /* ================= Spiel-Logik ================= */
 function speciesOf(pet) { return SPECIES.find(s => s.key === pet.species) || SPECIES[0]; }
-function speciesLabel(key) { return (T().species[key] || T().species.hund).label; }
 function clamp(v) { return Math.max(0, Math.min(100, v)); }
 
 function applyDecay(pet, minutes) {
@@ -888,6 +1371,8 @@ function gainXp(pet, amount) {
     needed = xpNeeded(pet.level);
     setMessage(pet, fmt(T().msgLevel, { lvl: pet.level }), 4000);
     burst(pet.id, ['🎉', '⭐', '🎊', '⭐'], 8);
+    addCoins(20);
+    burst(pet.id, ['🪙'], 3);
   }
 }
 function xpNeeded(level) { return 40 + (level - 1) * 30; }
@@ -936,6 +1421,7 @@ function doAction(id, action) {
     setMessage(pet, fmt(t.msgFeed, { food: sp.food }));
     burst(id, [sp.food, '😋', sp.food], 5);
     gainXp(pet, 5);
+    addCoins(1);
   } else if (action === 'play') {
     if (pet.energy < 10) {
       setMessage(pet, fmt(t.msgTired, { name: pet.name }));
@@ -946,6 +1432,7 @@ function doAction(id, action) {
       setMessage(pet, t.msgPlay);
       burst(id, ['🎾', '❤️', '🎉'], 6);
       gainXp(pet, 8);
+      addCoins(2);
     }
   } else if (action === 'wash') {
     pet.clean = clamp(pet.clean + 45);
@@ -953,6 +1440,7 @@ function doAction(id, action) {
     setMessage(pet, sp.bath < 0 ? t.msgBathNo : t.msgBathYes);
     burst(id, ['🫧', '💦', '🧼'], 6);
     gainXp(pet, 5);
+    addCoins(1);
   }
 
   wigglePet(id);
@@ -979,14 +1467,57 @@ function giveBack(id) {
   toast(fmt(T().toastBye, { name: pet.name }));
 }
 
+/* ================= Tierheim-Rotation ================= */
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function shelterWindow() { return Math.floor(Date.now() / SHELTER_WINDOW_MS); }
+
+function currentShelter() {
+  const rnd = mulberry32(shelterWindow() % 2147483647);
+  const pool = [...SPECIES];
+  const picked = [];
+  const weightOf = s => (s.rarity === 'epic' ? 1 : s.rarity === 'rare' ? 2 : 5);
+  while (picked.length < SHELTER_SIZE && pool.length) {
+    const total = pool.reduce((sum, s) => sum + weightOf(s), 0);
+    let roll = rnd() * total;
+    let idx = 0;
+    for (; idx < pool.length; idx++) {
+      roll -= weightOf(pool[idx]);
+      if (roll <= 0) break;
+    }
+    picked.push(pool.splice(Math.min(idx, pool.length - 1), 1)[0]);
+  }
+  return picked;
+}
+
+function shelterCountdown() {
+  const msLeft = (shelterWindow() + 1) * SHELTER_WINDOW_MS - Date.now();
+  const m = Math.floor(msLeft / 60000);
+  const s = Math.floor((msLeft % 60000) / 1000);
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
+let lastShelterWindow = shelterWindow();
+
 /* ================= Adoption ================= */
 let adoptKey = null;
 
 function openAdopt(key) {
-  adoptKey = key;
   const sp = SPECIES.find(s => s.key === key);
+  if (state.coins < sp.price) {
+    toast(T().noCoins);
+    return;
+  }
+  adoptKey = key;
   document.getElementById('modalEmoji').textContent = sp.emoji;
-  document.getElementById('modalTitle').textContent = fmt(T().adoptTitle, { species: speciesLabel(key) });
+  document.getElementById('modalTitle').textContent = fmt(T().adoptTitle, { species: T().species[key].label });
+  document.getElementById('modalPrice').textContent = `🪙 ${sp.price}`;
   const input = document.getElementById('nameInput');
   input.value = sp.names[Math.floor(Math.random() * sp.names.length)];
   document.getElementById('modalOverlay').classList.add('open');
@@ -1001,7 +1532,9 @@ function closeModal() {
 function confirmAdopt() {
   if (!adoptKey) return;
   const sp = SPECIES.find(s => s.key === adoptKey);
+  if (state.coins < sp.price) { closeModal(); toast(T().noCoins); return; }
   const name = (document.getElementById('nameInput').value.trim() || sp.names[0]).slice(0, 16);
+  addCoins(-sp.price);
   state.pets.push({
     id: state.nextId++,
     species: sp.key,
@@ -1019,22 +1552,45 @@ function confirmAdopt() {
 function showTab(tab) {
   document.getElementById('homeSection').style.display = tab === 'home' ? '' : 'none';
   document.getElementById('shelterSection').style.display = tab === 'shelter' ? '' : 'none';
+  document.getElementById('gamesSection').style.display = tab === 'games' ? '' : 'none';
   document.getElementById('tabHome').classList.toggle('active', tab === 'home');
   document.getElementById('tabShelter').classList.toggle('active', tab === 'shelter');
+  document.getElementById('tabGames').classList.toggle('active', tab === 'games');
   if (tab === 'home') renderHome();
+  if (tab === 'shelter') renderShelter();
 }
 
 function renderShelter() {
   const t = T();
+  document.getElementById('shelterInfo').textContent = fmt(t.newPetsIn, { time: shelterCountdown() });
   const grid = document.getElementById('shelterGrid');
-  grid.innerHTML = SPECIES.map(sp => `
+  grid.innerHTML = currentShelter().map(sp => `
     <div class="shelter-card">
+      <span class="rarity ${sp.rarity}">${escapeHtml(t.rarity[sp.rarity])}</span>
+      <span class="price-chip">🪙 ${sp.price}</span>
       <span class="shelter-emoji">${sp.emoji}</span>
       <h3>${escapeHtml(t.species[sp.key].label)}</h3>
       <p>${escapeHtml(t.species[sp.key].desc)}</p>
-      <button class="adopt-btn" onclick="openAdopt('${sp.key}')">${escapeHtml(t.adoptBtn)}</button>
+      <button class="adopt-btn ${state.coins < sp.price ? 'locked' : ''}" onclick="openAdopt('${sp.key}')">${escapeHtml(t.adoptBtn)}</button>
     </div>
   `).join('');
+}
+
+function renderGames() {
+  const t = T();
+  document.getElementById('gamesGrid').innerHTML = `
+    <div class="game-card">
+      <span class="game-ico">🍖✨</span>
+      <h3>${escapeHtml(t.g1Name)}</h3>
+      <p>${escapeHtml(t.g1Desc)}</p>
+      <button class="play-btn" onclick="startCatchGame()">${escapeHtml(t.playBtn)} ▶</button>
+    </div>
+    <div class="game-card">
+      <span class="game-ico">🃏🐾</span>
+      <h3>${escapeHtml(t.g2Name)}</h3>
+      <p>${escapeHtml(t.g2Desc)}</p>
+      <button class="play-btn" onclick="startMemoryGame()">${escapeHtml(t.playBtn)} ▶</button>
+    </div>`;
 }
 
 function renderHome() {
@@ -1108,6 +1664,187 @@ function updateCard(pet) {
   card.querySelectorAll('.act-feed, .act-play, .act-wash').forEach(b => { b.disabled = sleeping; });
 }
 
+/* ================= Mini-Spiele ================= */
+const gameOverlayEl = () => document.getElementById('gameOverlay');
+const gameStageEl = () => document.getElementById('gameStage');
+let activeGame = null;
+
+function openOverlay() {
+  gameOverlayEl().classList.add('open');
+  document.getElementById('gameResult').classList.remove('open');
+  gameStageEl().innerHTML = '';
+}
+function closeGame() {
+  gameOverlayEl().classList.remove('open');
+  document.getElementById('gameResult').classList.remove('open');
+  stopCatchLoop();
+  activeGame = null;
+  updateCoinChip();
+}
+function quitGame() {
+  stopCatchLoop();
+  closeGame();
+}
+function showResult(coins) {
+  const t = T();
+  addCoins(coins);
+  document.getElementById('rTitle').textContent = t.gameDone;
+  document.getElementById('rText').textContent = fmt(t.gameEarned, { coins });
+  document.getElementById('rBtn').textContent = t.gameClose;
+  document.getElementById('gameResult').classList.add('open');
+}
+
+/* --- Spiel 1: Leckerli-Fangen (3D-Perspektive) --- */
+const catchGame = { running: false, score: 0, timeLeft: 30, treats: [], raf: 0, spawnTimer: 0, clock: 0 };
+const TREAT_EMOJIS = ['🦴', '🐟', '🥕', '🥩', '🧀', '🍎', '🌽', '🍗'];
+
+function startCatchGame() {
+  openOverlay();
+  activeGame = 'catch';
+  catchGame.running = true;
+  catchGame.score = 0;
+  catchGame.timeLeft = 30;
+  catchGame.treats = [];
+  gameStageEl().innerHTML = '<div class="floor3d"></div>';
+  updateHud();
+
+  catchGame.clock = setInterval(() => {
+    catchGame.timeLeft -= 1;
+    updateHud();
+    if (catchGame.timeLeft <= 0) finishCatchGame();
+  }, 1000);
+  catchGame.spawnTimer = setInterval(spawnTreat, 650);
+  spawnTreat();
+  let last = performance.now();
+  const loop = (now) => {
+    if (!catchGame.running) return;
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    for (const tr of [...catchGame.treats]) {
+      tr.z += tr.speed * dt;
+      tr.y = -60 + (tr.z + 1400) / 1600 * 180;
+      tr.el.style.transform = `translate(-50%, -50%) translate3d(${tr.x}px, ${tr.y}px, ${tr.z}px) rotate(${tr.z / 14}deg)`;
+      if (tr.z > 240) removeTreat(tr);
+    }
+    catchGame.raf = requestAnimationFrame(loop);
+  };
+  catchGame.raf = requestAnimationFrame(loop);
+}
+
+function spawnTreat() {
+  if (!catchGame.running) return;
+  const el = document.createElement('span');
+  el.className = 'treat3d';
+  el.textContent = TREAT_EMOJIS[Math.floor(Math.random() * TREAT_EMOJIS.length)];
+  const tr = {
+    el,
+    x: (Math.random() - 0.5) * Math.min(560, window.innerWidth * 0.7),
+    y: 0,
+    z: -1400,
+    speed: 420 + Math.random() * 180 + (30 - catchGame.timeLeft) * 12,
+  };
+  el.style.transform = `translate(-50%, -50%) translate3d(${tr.x}px, 0px, -1400px)`;
+  el.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    if (!catchGame.running) return;
+    catchGame.score += 1;
+    updateHud();
+    el.classList.add('pop');
+    catchGame.treats = catchGame.treats.filter(x => x !== tr);
+    setTimeout(() => el.remove(), 320);
+  });
+  gameStageEl().appendChild(el);
+  catchGame.treats.push(tr);
+}
+
+function removeTreat(tr) {
+  tr.el.remove();
+  catchGame.treats = catchGame.treats.filter(x => x !== tr);
+}
+
+function updateHud() {
+  if (activeGame === 'catch') {
+    document.getElementById('gInfo1').textContent = `⏱ ${catchGame.timeLeft}`;
+    document.getElementById('gInfo2').textContent = `🎯 ${catchGame.score}`;
+  } else if (activeGame === 'memory') {
+    document.getElementById('gInfo1').textContent = `🔁 ${memoryGame.misses}`;
+    document.getElementById('gInfo2').textContent = `🎯 ${memoryGame.matched} / ${memoryGame.pairs}`;
+  }
+}
+
+function stopCatchLoop() {
+  catchGame.running = false;
+  cancelAnimationFrame(catchGame.raf);
+  clearInterval(catchGame.clock);
+  clearInterval(catchGame.spawnTimer);
+}
+
+function finishCatchGame() {
+  stopCatchLoop();
+  showResult(catchGame.score * 2);
+}
+
+/* --- Spiel 2: Tier-Memory (3D-Kartenflip) --- */
+const memoryGame = { deck: [], first: null, lock: false, matched: 0, misses: 0, pairs: 6 };
+
+function startMemoryGame() {
+  openOverlay();
+  activeGame = 'memory';
+  memoryGame.first = null;
+  memoryGame.lock = false;
+  memoryGame.matched = 0;
+  memoryGame.misses = 0;
+
+  const pool = [...SPECIES].sort(() => Math.random() - 0.5).slice(0, memoryGame.pairs);
+  memoryGame.deck = [...pool, ...pool].map(sp => sp.emoji).sort(() => Math.random() - 0.5);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'memory-wrap';
+  const grid = document.createElement('div');
+  grid.className = 'memory-grid';
+  memoryGame.deck.forEach((emoji, idx) => {
+    const card = document.createElement('button');
+    card.className = 'mcard';
+    card.dataset.idx = idx;
+    card.dataset.emoji = emoji;
+    card.innerHTML = `<span class="mcard-inner"><span class="mface front">🐾</span><span class="mface back">${emoji}</span></span>`;
+    card.addEventListener('click', () => flipCard(card));
+    grid.appendChild(card);
+  });
+  wrap.appendChild(grid);
+  gameStageEl().appendChild(wrap);
+  updateHud();
+}
+
+function flipCard(card) {
+  if (memoryGame.lock || card.classList.contains('flip') || card.classList.contains('matched')) return;
+  card.classList.add('flip');
+  if (!memoryGame.first) {
+    memoryGame.first = card;
+    return;
+  }
+  const a = memoryGame.first;
+  memoryGame.first = null;
+  if (a.dataset.emoji === card.dataset.emoji) {
+    a.classList.add('matched');
+    card.classList.add('matched');
+    memoryGame.matched += 1;
+    updateHud();
+    if (memoryGame.matched >= memoryGame.pairs) {
+      setTimeout(() => showResult(Math.max(10, 40 - memoryGame.misses * 2)), 550);
+    }
+  } else {
+    memoryGame.misses += 1;
+    memoryGame.lock = true;
+    updateHud();
+    setTimeout(() => {
+      a.classList.remove('flip');
+      card.classList.remove('flip');
+      memoryGame.lock = false;
+    }, 750);
+  }
+}
+
 /* ================= Effekte ================= */
 function wigglePet(id) {
   const el = document.querySelector(`#pet-${id} .pet-emoji`);
@@ -1118,8 +1855,8 @@ function wigglePet(id) {
 }
 
 function burst(id, emojis, count) {
-  const stage = document.querySelector(`#pet-${id} .pet-stage`);
-  if (!stage) return;
+  const stageEl = document.querySelector(`#pet-${id} .pet-stage`);
+  if (!stageEl) return;
   for (let i = 0; i < count; i++) {
     const p = document.createElement('span');
     p.className = 'particle';
@@ -1127,7 +1864,7 @@ function burst(id, emojis, count) {
     p.style.left = (25 + Math.random() * 50) + '%';
     p.style.bottom = (10 + Math.random() * 30) + 'px';
     p.style.animationDelay = (Math.random() * 0.35) + 's';
-    stage.appendChild(p);
+    stageEl.appendChild(p);
     setTimeout(() => p.remove(), 1600);
   }
 }
@@ -1160,6 +1897,16 @@ setInterval(() => {
     updateCard(pet);
   });
   save();
+
+  // Tierheim: Countdown & Rotation
+  const shelterVisible = document.getElementById('shelterSection').style.display !== 'none';
+  if (shelterWindow() !== lastShelterWindow) {
+    lastShelterWindow = shelterWindow();
+    renderShelter();
+    toast(T().newPets);
+  } else if (shelterVisible) {
+    document.getElementById('shelterInfo').textContent = fmt(T().newPetsIn, { time: shelterCountdown() });
+  }
 }, 1000);
 
 /* Enter-Taste im Namensfeld bestätigt die Adoption */
@@ -1171,6 +1918,7 @@ document.getElementById('nameInput').addEventListener('keydown', e => {
 document.getElementById('langSelect').innerHTML = LANGS.map(l =>
   `<option value="${l.code}">${l.flag} ${l.name}</option>`).join('');
 load();
+updateCoinChip();
 applyLang();
 </script>
 </body>
